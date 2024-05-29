@@ -94,6 +94,7 @@ int main(int argc, char ** argv) {
         show_additional_info(argc, argv);
         return 1;
     }
+#ifdef ANDROID
     if (backend != GGML_BACKEND_GGML) { // GGML_BACKEND_GGML is the original GGML, used to compare performance between QNN backend and original GGML
 #ifdef GGML_USE_QNN
         LOGGD("using QNN backend %d", backend);
@@ -105,6 +106,7 @@ int main(int argc, char ** argv) {
         return 1;
 #endif
     }
+#endif
 
 #ifndef LOG_DISABLE_LOGS
     log_set_target(log_filename_generator("llava", "log"));
