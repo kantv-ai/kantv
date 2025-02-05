@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "libavutil/cde_log.h"
+#include "libavutil/cde_assert.h"
+
 #ifdef LLAMA_SHARED
 #    if defined(_WIN32) && !defined(__MINGW32__)
 #        ifdef LLAMA_BUILD

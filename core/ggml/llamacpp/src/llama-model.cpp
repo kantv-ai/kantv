@@ -381,6 +381,7 @@ void llama_model::load_stats(llama_model_loader & ml) {
 void llama_model::load_arch(llama_model_loader & ml) {
     arch = ml.get_arch();
     if (arch == LLM_ARCH_UNKNOWN) {
+        LOGGD("unknown model architecture");
         throw std::runtime_error("unknown model architecture: '" + ml.get_arch_name() + "'");
     }
 }

@@ -154,7 +154,6 @@
      private AtomicBoolean isBenchmarking = new AtomicBoolean(false);
      private ProgressDialog mProgressDialog;
 
-     //private String ggmlModelFileName = "ggml-tiny-q5_1.bin"; //31M
      private String ggmlModelFileName = "ggml-tiny.en-q8_0.bin";//42M, ggml-tiny.en-q8_0.bin is preferred
      private String ggmlSampleFileName = "jfk.wav";
      private String ggmlMNISTImageFile = "mnist-5.png";
@@ -164,7 +163,6 @@
      //for users in China,         https://modelscope.cn/models/OpenBMB/MiniCPM-Llama3-V-2_5-gguf/files
      //for users outside of China, https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5-gguf/tree/main
      private String ggmlMiniCPMVModelFile = "ggml-model-Q4_K_M.gguf";
-
 
      //https://huggingface.co/ggerganov/gemma-2b-Q8_0-GGUF/resolve/main/gemma-2b.Q8_0.gguf // 2.67 GB
      //private String ggmlModelFileName = "gemma-2b.Q8_0.gguf";    // 2.67 GB

@@ -902,12 +902,15 @@ struct common_init_result common_init_from_params(common_params & params) {
     auto mparams = common_model_params_to_llama(params);
 
     llama_model * model = nullptr;
-
+    LOG_INF("load model");
     if (!params.hf_repo.empty() && !params.hf_file.empty()) {
+        LOG_INF("common_load_model_from_hf");
         model = common_load_model_from_hf(params.hf_repo, params.hf_file, params.model, params.hf_token, mparams);
     } else if (!params.model_url.empty()) {
+        LOG_INF("common_load_model_from_url");
         model = common_load_model_from_url(params.model_url, params.model, params.hf_token, mparams);
     } else {
+        LOG_INF("llama_model_load_from_file");
         model = llama_model_load_from_file(params.model.c_str(), mparams);
     }
 

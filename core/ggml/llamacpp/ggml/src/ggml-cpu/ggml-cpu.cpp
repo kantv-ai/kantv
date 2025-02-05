@@ -622,6 +622,7 @@ static const struct ggml_backend_reg_i ggml_backend_cpu_reg_i = {
 };
 
 ggml_backend_reg_t ggml_backend_cpu_reg(void) {
+    LOGGD("enter ggml_backend_cpu_reg");
     // init CPU feature detection
     ggml_cpu_init();
 

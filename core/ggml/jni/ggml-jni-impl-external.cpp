@@ -7445,7 +7445,8 @@ int llama_inference_ng(const char *sz_model_path, const char *sz_user_data, int 
         LOGGD("pls check params\n");
         return 1;
     }
-    //TODO: this is a lazy/dirty/quick method, just for merge latest source codes of llama.cpp from upstream quickly
+    //this is a lazy/dirty method for merge latest source codes of upstream llama.cpp on Android port
+    //easily and quickly,so we can do everything in native C/C++ layer rather than write a complicated Java wrapper
     int argc = 7;
     const char *argv[] = {"llama-inference-main",
                           "-m", sz_model_path,
@@ -7453,8 +7454,6 @@ int llama_inference_ng(const char *sz_model_path, const char *sz_user_data, int 
                           "-t", std::to_string(n_threads).c_str()
     };
     ret = llama_inference_main(argc, const_cast<char **>(argv), n_backend_type);
-    GGML_JNI_NOTIFY("LLM inference not supported");
-    ret = 0;
 
     return ret;
 }

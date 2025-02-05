@@ -4,6 +4,8 @@
 
 #include "ggml.h"
 #include "gguf.h"
+#include "libavutil/cde_log.h"
+#include "libavutil/cde_assert.h"
 
 #include <assert.h>
 #include <math.h>

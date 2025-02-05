@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(TARGET_XIAOMI14    ON)  # set it to ON to get much better performance on Xiaomi 14 or Qualcomm Snapdragon 8 Gen 3 SoC based Android phone
+set(TARGET_XIAOMI14    ON)   # set it to ON to get much better performance on Xiaomi 14 or Qualcomm Snapdragon 8 Gen 3 SoC based Android phone
 set(GGML_ENABLE_QNN    OFF)  # set it to ON to enable QNN(Qualcomm Neural Network, aka Qualcomm AI Engine Direct) SDK on Qualcomm SoC based Android phone
 
 set(KANTV_MEDIA_SRC_DIR         ${CMAKE_SOURCE_DIR}/media/)
@@ -53,7 +53,6 @@ if (GGML_ENABLE_QNN)
 endif()
 
 set(SOURCE_FILES
-        #03-30-2024, upstream source code in llama.cpp is preferred
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml.c
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml-alloc.c
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml-backend.cpp
@@ -115,13 +114,18 @@ include_directories(${GGML_SRC_DIR}/)
 include_directories(${KANTV_GGMLJNI_SRC_DIR}/)
 include_directories(${PREBUILT_INC_PATH}/)
 
-#re-use the ggml.h in subdirectory llamacpp/ggml.h to avoid NDK complain "error: redefinition of 'ggml_status'"
 include_directories(${LLAMACPP_SRC_DIR}/)
 include_directories(${LLAMACPP_SRC_DIR}/common/)
 
 add_definitions(-DTARGET_ANDROID)
 add_definitions(-D__ARM_NEON)
 add_definitions(-DGGML_USE_LLAMAFILE)
+
+#2025-01:make the new sw arch of upstream llama.cpp happy on Android port
+#add_definitions(-D__ARM_ARCH) #FIXME:why NDK complains NEON issue in ggml-quants.c
+add_definitions(-D__aarch64__)
+add_definitions(-D__linux__)
+add_definitions(-DGGML_USE_CPU)
 
 if (GGML_ENABLE_QNN)
 add_definitions(-DGGML_USE_QNN)

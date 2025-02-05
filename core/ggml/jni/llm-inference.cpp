@@ -290,7 +290,7 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     {
         auto prompt = (params.conversation_mode && params.enable_chat_template)
             // format the system prompt in conversation mode (fallback to default if empty)
-            ? chat_add_and_format("system", params.prompt.empty() ? DEFAULT_SYSTEM_MESSAGE : params.prompt)
+            ? chat_add_and_format("", params.prompt.empty() ? DEFAULT_SYSTEM_MESSAGE : params.prompt)
             // otherwise use the prompt as is
             : params.prompt;
         if (params.interactive_first || !params.prompt.empty() || session_tokens.empty()) {

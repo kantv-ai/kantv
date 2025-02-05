@@ -252,9 +252,7 @@ here is a screenshot to demostrate LLM inference by running the magic <a href="h
 here is a screenshot to demostrate ASR inference by running the excellent <a href="https://github.com/ggerganov/whisper.cpp"> whisper.cpp </a> on a Xiaomi 14 device - <b>fully offline, on-device</b>.
 
 
-![Image](https://github.com/user-attachments/assets/3bed779c-2297-4b09-bf13-9776d0b9d4e3)
-
-
+![Image](https://github.com/user-attachments/assets/9bf4fb00-9b7a-4bca-ac84-2c11babd69a2)
 
 
 <details>
@@ -268,8 +266,6 @@ here is a screenshot to demostrate ASR inference by running the excellent <a hre
 
 
 ### Hot topics
-
-- integrate <a href="https://github.com/deepseek-ai">DeepSeek AI</a>
 
 - bugfix in UI layer(Java)
 

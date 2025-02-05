@@ -153,6 +153,12 @@ struct ggml_backend_registry {
     std::vector<ggml_backend_dev_t> devices;
 
     ggml_backend_registry() {
+        LOGGD("enter ggml_backend_registry");
+#ifdef GGML_USE_CPU
+        LOGGD("use cpu backend");
+#else
+        LOGGD("disable cpu backend");
+#endif
 #ifdef GGML_USE_CUDA
         register_backend(ggml_backend_cuda_reg());
 #endif

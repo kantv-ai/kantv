@@ -38,6 +38,7 @@ static int llama_model_load(const std::string & fname, std::vector<std::string> 
     time_meas tm(model.t_load_us);
 
     model.t_start_us = tm.t_start_us;
+    LOGGD("use_mmap %d", params.use_mmap);
 
     try {
         llama_model_loader ml(fname, splits, params.use_mmap, params.check_tensors, params.kv_overrides);
@@ -47,21 +48,28 @@ static int llama_model_load(const std::string & fname, std::vector<std::string> 
         model.hparams.vocab_only = params.vocab_only;
 
         try {
+            LOGGD("load arch");
             model.load_arch(ml);
+            LOGGD("after load arch");
         } catch(const std::exception & e) {
+            LOGGD("error loading model architecture: %s", std::string(e.what()).c_str());
             throw std::runtime_error("error loading model architecture: " + std::string(e.what()));
         }
         try {
             model.load_hparams(ml);
         } catch(const std::exception & e) {
+            LOGGD("error loading model hyperparameters:%s", std::string(e.what()).c_str());
             throw std::runtime_error("error loading model hyperparameters: " + std::string(e.what()));
         }
         try {
+            LOGGD("load vocab");
             model.load_vocab(ml);
         } catch(const std::exception & e) {
+            LOGGD("error loading model vocabulary:%s ", std::string(e.what()).c_str());
             throw std::runtime_error("error loading model vocabulary: " + std::string(e.what()));
         }
 
+        LOGGD("load stats");
         model.load_stats(ml);
         model.print_info();
 
@@ -70,13 +78,16 @@ static int llama_model_load(const std::string & fname, std::vector<std::string> 
             return 0;
         }
 
+        LOGGD("load tensors");
         if (!model.load_tensors(ml)) {
+            LLAMA_LOG_ERROR("%s: error loading model\n", __func__);
             return -2;
         }
     } catch (const std::exception & err) {
         LLAMA_LOG_ERROR("%s: error loading model: %s\n", __func__, err.what());
         return -1;
     }
+    LOGGD("leave");
 
     return 0;
 }
@@ -9412,7 +9423,8 @@ static struct llama_model * llama_model_load_from_file_impl(
         std::vector<std::string> & splits,
         struct llama_model_params params) {
     ggml_time_init();
-
+    LLAMA_LOG_INFO("llama_model_load_from_file_impl %s", path_model.c_str());
+    LOGGD("llama_model_load_from_file_impl %s", path_model.c_str());
     llama_model * model = new llama_model(params);
 
     unsigned cur_percentage = 0;
@@ -9433,6 +9445,7 @@ static struct llama_model * llama_model_load_from_file_impl(
     }
 
     // create list of devices to use with this model
+    LOGGD("params.devices %p", params.devices);
     if (params.devices) {
         for (ggml_backend_dev_t * dev = params.devices; *dev; ++dev) {
             model->devices.push_back(*dev);
@@ -9440,8 +9453,10 @@ static struct llama_model * llama_model_load_from_file_impl(
     } else {
         std::vector<ggml_backend_dev_t> rpc_servers;
         // use all available devices
+        LLAMA_LOG_INFO("ggml_backend_dev_count=%d", ggml_backend_dev_count());
         for (size_t i = 0; i < ggml_backend_dev_count(); ++i) {
             ggml_backend_dev_t dev = ggml_backend_dev_get(i);
+            LOGGD("dev %p", dev);
             switch (ggml_backend_dev_type(dev)) {
                 case GGML_BACKEND_DEVICE_TYPE_CPU:
                 case GGML_BACKEND_DEVICE_TYPE_ACCEL:
@@ -9483,7 +9498,8 @@ static struct llama_model * llama_model_load_from_file_impl(
     }
 
     const int status = llama_model_load(path_model, splits, *model, params);
-    GGML_ASSERT(status <= 0);
+    LOGGD("status %d", status);
+    //GGML_ASSERT(status <= 0);
     if (status < 0) {
         if (status == -1) {
             LLAMA_LOG_ERROR("%s: failed to load model\n", __func__);
