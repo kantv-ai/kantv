@@ -264,6 +264,13 @@ here is a screenshot to demostrate ASR inference by running the excellent <a hre
   </ol>
 </details>
 
+### Highlight
+
+implementation of ggml-qnn
+
+https://github.com/zhouwg/kantv/issues/121
+
+https://github.com/zhouwg/kantv/issues/246
 
 ### Hot topics
 
