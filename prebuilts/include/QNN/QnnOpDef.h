@@ -1,7 +1,7 @@
 //=============================================================================
 //
-//  Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
-//  All Rights Reserved.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All rights reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //=============================================================================
@@ -24,8 +24,8 @@
 // The Op package name
 #define QNN_OP_PACKAGE_NAME_QTI_AISW "qti.aisw"
 
-#define QNN_OPSET_VERSION_MAJOR 1
-#define QNN_OPSET_VERSION_MINOR 30
+#define QNN_OPSET_VERSION_MAJOR 2
+#define QNN_OPSET_VERSION_MINOR 1
 #define QNN_OPSET_VERSION_PATCH 0
 
 #define QNN_OP_ARGB_TO_RGB                      "ArgbToRgb"
@@ -70,16 +70,39 @@
 #define QNN_OP_BOX_WITH_NMS_LIMIT_PARAM_IOU_THRESHOLD        "iou_threshold"
 #define QNN_OP_BOX_WITH_NMS_LIMIT_PARAM_SIGMA                "sigma"
 
+#define QNN_OP_BUFFER                         "Buffer"
+#define QNN_OP_BUFFER_PARAM_BUFFER_SIZE       "buffer_size"
+#define QNN_OP_BUFFER_PARAM_BUFFER_DIM        "buffer_dim"
+#define QNN_OP_BUFFER_PARAM_STRIDE            "stride"
+#define QNN_OP_BUFFER_PARAM_MODE              "mode"
+#define QNN_OP_BUFFER_MODE_BLOCKING           0
+#define QNN_OP_BUFFER_MODE_NON_BLOCKING_LEFT  1
+#define QNN_OP_BUFFER_MODE_NON_BLOCKING_RIGHT 2
+
 #define QNN_OP_CAST "Cast"
 
 #define QNN_OP_CHANNEL_SHUFFLE                  "ChannelShuffle"
 #define QNN_OP_CHANNEL_SHUFFLE_PARAM_NUM_GROUPS "num_groups"
 #define QNN_OP_CHANNEL_SHUFFLE_PARAM_AXIS       "axis"
 
+#define QNN_OP_COL2_IM                   "Col2Im"
+#define QNN_OP_COL2_IM_PARAM_KERNEL_SIZE "kernel_size"
+#define QNN_OP_COL2_IM_PARAM_STRIDE      "stride"
+#define QNN_OP_COL2_IM_PARAM_PAD_AMOUNT  "pad_amount"
+#define QNN_OP_COL2_IM_PARAM_DILATION    "dilation"
+
 #define QNN_OP_COLLECT_RPN_PROPOSALS                     "CollectRpnProposals"
 #define QNN_OP_COLLECT_RPN_PROPOSALS_PARAM_RPN_MIN_LEVEL "rpn_min_level"
 #define QNN_OP_COLLECT_RPN_PROPOSALS_PARAM_RPN_MAX_LEVEL "rpn_max_level"
 #define QNN_OP_COLLECT_RPN_PROPOSALS_PARAM_POST_NMS_TOP  "post_nms_top"
+
+#define QNN_OP_COMBINED_NMS                           "CombinedNms"
+#define QNN_OP_COMBINED_NMS_PARAM_MAX_BOXES_PER_CLASS "max_boxes_per_class"
+#define QNN_OP_COMBINED_NMS_PARAM_MAX_TOTAL_BOXES     "max_total_boxes"
+#define QNN_OP_COMBINED_NMS_PARAM_IOU_THRESHOLD       "iou_threshold"
+#define QNN_OP_COMBINED_NMS_PARAM_SCORE_THRESHOLD     "score_threshold"
+#define QNN_OP_COMBINED_NMS_PARAM_PAD_PER_CLASS       "pad_per_class"
+#define QNN_OP_COMBINED_NMS_PARAM_CLIP_BOXES          "clip_boxes"
 
 #define QNN_OP_CONCAT            "Concat"
 #define QNN_OP_CONCAT_PARAM_AXIS "axis"
@@ -306,6 +329,7 @@
 
 #define QNN_OP_EXPAND_DIMS            "ExpandDims"
 #define QNN_OP_EXPAND_DIMS_PARAM_AXIS "axis"
+#define QNN_OP_EXPAND_DIMS_PARAM_AXES "axes"
 
 #define QNN_OP_EXTRACT_GLIMPSE                  "ExtractGlimpse"
 #define QNN_OP_EXTRACT_GLIMPSE_PARAM_SIZE       "size"
@@ -374,6 +398,12 @@
 #define QNN_OP_HARD_SWISH "HardSwish"
 
 #define QNN_OP_HEAT_MAP_MAX_KEY_POINT "HeatMapMaxKeyPoint"
+
+#define QNN_OP_IM2_COL                   "Im2Col"
+#define QNN_OP_IM2_COL_PARAM_KERNEL_SIZE "kernel_size"
+#define QNN_OP_IM2_COL_PARAM_STRIDE      "stride"
+#define QNN_OP_IM2_COL_PARAM_PAD_AMOUNT  "pad_amount"
+#define QNN_OP_IM2_COL_PARAM_DILATION    "dilation"
 
 #define QNN_OP_IF                  "If"
 #define QNN_OP_IF_PARAM_THEN_GRAPH "then_graph"
@@ -547,6 +577,10 @@
 #define QNN_OP_REDUCE_SUM_PARAM_AXES      "axes"
 #define QNN_OP_REDUCE_SUM_PARAM_KEEP_DIMS "keep_dims"
 
+#define QNN_OP_REDUCE_SUM_SQUARE                 "ReduceSumSquare"
+#define QNN_OP_REDUCE_SUM_SQUARE_PARAM_AXES      "axes"
+#define QNN_OP_REDUCE_SUM_SQUARE_PARAM_KEEP_DIMS "keep_dims"
+
 #define QNN_OP_RELU "Relu"
 
 #define QNN_OP_RELU1 "Relu1"
@@ -580,10 +614,15 @@
 #define QNN_OP_RESIZE_BILINEAR                          "ResizeBilinear"
 #define QNN_OP_RESIZE_BILINEAR_PARAM_ALIGN_CORNERS      "align_corners"
 #define QNN_OP_RESIZE_BILINEAR_PARAM_HALF_PIXEL_CENTERS "half_pixel_centers"
+#define QNN_OP_RESIZE_BILINEAR_PARAM_ANTIALIAS          "antialias"
 
 #define QNN_OP_RESIZE_NEAREST_NEIGHBOR                          "ResizeNearestNeighbor"
 #define QNN_OP_RESIZE_NEAREST_NEIGHBOR_PARAM_ALIGN_CORNERS      "align_corners"
 #define QNN_OP_RESIZE_NEAREST_NEIGHBOR_PARAM_HALF_PIXEL_CENTERS "half_pixel_centers"
+
+#define QNN_OP_RMS_NORM               "RmsNorm"
+#define QNN_OP_RMS_NORM_PARAM_EPSILON "epsilon"
+#define QNN_OP_RMS_NORM_PARAM_AXES    "axes"
 
 #define QNN_OP_ROI_ALIGN                         "RoiAlign"
 #define QNN_OP_ROI_ALIGN_PARAM_IMG_SIZE_RATIO    "img_size_ratio"
@@ -634,7 +673,8 @@
 #define QNN_OP_SPLIT_PARAM_AXIS        "axis"
 #define QNN_OP_SPLIT_PARAM_SPLIT_INDEX "split_index"
 
-#define QNN_OP_SQUEEZE "Squeeze"
+#define QNN_OP_SQUEEZE            "Squeeze"
+#define QNN_OP_SQUEEZE_PARAM_AXES "axes"
 
 #define QNN_OP_STRIDED_SLICE                     "StridedSlice"
 #define QNN_OP_STRIDED_SLICE_PARAM_RANGES        "ranges"
@@ -648,8 +688,9 @@
 #define QNN_OP_TILE                 "Tile"
 #define QNN_OP_TILE_PARAM_MULTIPLES "multiples"
 
-#define QNN_OP_TOP_K         "TopK"
-#define QNN_OP_TOP_K_PARAM_K "k"
+#define QNN_OP_TOP_K               "TopK"
+#define QNN_OP_TOP_K_PARAM_K       "k"
+#define QNN_OP_TOP_K_PARAM_LARGEST "largest"
 
 #define QNN_OP_TRANSPOSE            "Transpose"
 #define QNN_OP_TRANSPOSE_PARAM_PERM "perm"

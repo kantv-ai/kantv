@@ -1,6 +1,6 @@
 //==============================================================================
 //
-// Copyright (c) 2020-2023 Qualcomm Technologies, Inc.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 // All Rights Reserved.
 // Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -24,7 +24,7 @@
 
 // GPU API Version values
 #define QNN_GPU_API_VERSION_MAJOR 3
-#define QNN_GPU_API_VERSION_MINOR 3
+#define QNN_GPU_API_VERSION_MINOR 7
 #define QNN_GPU_API_VERSION_PATCH 0
 
 // clang-format off

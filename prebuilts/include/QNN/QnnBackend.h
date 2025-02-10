@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2019-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -145,6 +145,46 @@ typedef struct {
   }
 // clang-format on
 
+/**
+ * @brief This enum defines backend property options.
+ */
+typedef enum {
+  /// Gets backend custom properties, see backend specific documentation.
+  QNN_BACKEND_PROPERTY_OPTION_CUSTOM = 0,
+  /// Value selected to ensure 32 bits.
+  QNN_BACKEND_PROPERTY_OPTION_UNDEFINED = 0x7FFFFFFF
+} QnnBackend_PropertyOption_t;
+
+/**
+ * @brief Backend specific object for custom property
+ *
+ * Please refer to documentation provided by the backend for usage information
+ */
+typedef void* QnnBackend_CustomProperty_t;
+
+/**
+ * @brief This struct provides backend property.
+ *        Option is specified by the client. Everything
+ *        else is written by the backend.
+ */
+typedef struct {
+  QnnBackend_PropertyOption_t option;
+  union UNNAMED {
+    QnnBackend_CustomProperty_t customProperty;
+  };
+} QnnBackend_Property_t;
+
+// clang-format off
+/// QnnBackend_Property_t initializer macro
+#define QNN_BACKEND_PROPERTY_INIT                     \
+  {                                                   \
+    QNN_BACKEND_PROPERTY_OPTION_UNDEFINED, /*option*/ \
+    {                                                 \
+      NULL /*customProperty*/                         \
+    }                                                 \
+  }
+// clang-format on
+
 //=============================================================================
 // Public Functions
 //=============================================================================
@@ -272,6 +312,8 @@ Qnn_ErrorHandle_t QnnBackend_getBuildId(const char** id);
  *         - QNN_BACKEND_ERROR_OP_PACKAGE_DUPLICATE: OpPackageName+OpName must be unique.
  *           Op package content information can be be obtained with QnnOpPackage interface.
  *           Indicates that an Op with the same package name and op name was already registered.
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
@@ -295,6 +337,8 @@ Qnn_ErrorHandle_t QnnBackend_registerOpPackage(Qnn_BackendHandle_t backend,
  *         - QNN_SUCCESS: No error encountered
  *         - QNN_BACKEND_ERROR_INVALID_ARGUMENT: if _numOperations_ or _operations_ is NULL
  *         - QNN_BACKEND_ERROR_INVALID_HANDLE: _backend_ is not a valid handle
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
@@ -332,6 +376,33 @@ QNN_API
 Qnn_ErrorHandle_t QnnBackend_validateOpConfig(Qnn_BackendHandle_t backend, Qnn_OpConfig_t opConfig);
 
 /**
+ * @brief A function to get a list of backend properties.
+ *        Backends are not required to support this API.
+ *
+ * @param[in] backendHandle A backend handle.
+ *
+ * @param[in/out] properties Pointer to a null terminated array of pointers containing the
+ *                           properties associated with the passed backendHandle. Memory for
+ *                           this information is owned and managed by the client. Client
+ *                           needs to populate the property options being requested. If
+ *                           _contextHandle_ is not recognized, the pointer _properties_
+ *                           points to is set to nullptr.
+ *
+ * @return Error code:
+ *         - QNN_SUCCESS: no error is encountered
+ *         - QNN_BACKEND_ERROR_INVALID_HANDLE: _backendHandle_ is not a valid handle
+ *         - QNN_BACKEND_ERROR_INVALID_ARGUMENT: _properties_ is NULL or at least one property option
+ *           is invalid
+ *         - QNN_BACKEND_ERROR_NOT_SUPPORTED: at least one valid property option is not
+ *           supported
+ *
+ * @note Use corresponding API through QnnInterface_t.
+ */
+QNN_API
+Qnn_ErrorHandle_t QnnBackend_getProperty(Qnn_BackendHandle_t backendHandle,
+                                         QnnBackend_Property_t** properties);
+
+/**
  * @brief Free all resources associated with a backend handle.
  *
  * @param[in] backend handle to be freed.
@@ -343,6 +414,8 @@ Qnn_ErrorHandle_t QnnBackend_validateOpConfig(Qnn_BackendHandle_t backend, Qnn_O
  *           resources or failure to invalidate handles and pointers allocated
  *           by the library
  *         - QNN_BACKEND_ERROR_INVALID_HANDLE: _backend_ is not a valid handle
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */

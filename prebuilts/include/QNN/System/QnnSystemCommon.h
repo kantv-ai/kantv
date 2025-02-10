@@ -1,8 +1,8 @@
 //==============================================================================
 //
-// Copyright (c) 2021-2023 Qualcomm Technologies, Inc.
-// All Rights Reserved.
-// Confidential and Proprietary - Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All Rights Reserved.
+//  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //==============================================================================
 
@@ -37,7 +37,7 @@ extern "C" {
 
 // Provide values to use for API version.
 #define QNN_SYSTEM_API_VERSION_MAJOR 1
-#define QNN_SYSTEM_API_VERSION_MINOR 1
+#define QNN_SYSTEM_API_VERSION_MINOR 3
 #define QNN_SYSTEM_API_VERSION_PATCH 0
 
 // Error code space assigned to system API components

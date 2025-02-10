@@ -66,6 +66,10 @@
 #include "ggml-kompute.h"
 #endif
 
+#ifdef GGML_USE_QNN
+#include "ggml-qnn.h"
+#endif
+
 // disable C++17 deprecation warning for std::codecvt_utf8
 #if defined(__clang__)
 #    pragma clang diagnostic push
@@ -130,7 +134,17 @@ struct dl_handle_deleter {
 };
 
 static void * dl_load_library(const std::wstring & path) {
-    dl_handle * handle = dlopen(utf16_to_utf8(path).c_str(), RTLD_NOW | RTLD_LOCAL);
+    LOGGD("lib name %s", utf16_to_utf8(path).c_str());
+    std::string qnnlibname = utf16_to_utf8(path);
+    if (access(qnnlibname.c_str(), F_OK) != 0) {
+        LOGGD("lib %s not found", qnnlibname.c_str());
+    } else{
+        LOGGD("lib %s found", qnnlibname.c_str());
+    }
+    dl_handle * handle = dlopen(utf16_to_utf8(path).c_str(), RTLD_NOW | RTLD_GLOBAL);
+    if (NULL == handle) {
+        LOGGD("load library %s failed, reason %s", utf16_to_utf8(path).c_str(), strerror(errno));
+    }
 
     return handle;
 }
@@ -159,6 +173,13 @@ struct ggml_backend_registry {
 #else
         LOGGD("disable cpu backend");
 #endif
+
+#ifdef GGML_USE_QNN
+        LOGGD("use qnn backend");
+#else
+        LOGGD("disable qnn backend");
+#endif
+
 #ifdef GGML_USE_CUDA
         register_backend(ggml_backend_cuda_reg());
 #endif
@@ -185,6 +206,9 @@ struct ggml_backend_registry {
 #endif
 #ifdef GGML_USE_KOMPUTE
         register_backend(ggml_backend_kompute_reg());
+#endif
+#ifdef GGML_USE_QNN
+        register_backend(ggml_backend_qnn_reg());
 #endif
 #ifdef GGML_USE_CPU
         register_backend(ggml_backend_cpu_reg());
@@ -224,10 +248,14 @@ struct ggml_backend_registry {
     }
 
     ggml_backend_reg_t load_backend(const std::wstring & path, bool silent) {
+        LOGGD("backend path %s",utf16_to_utf8(path).c_str());
+        LOGGD("silent %d", silent);
+        GGML_LOG_INFO("backend path %s",utf16_to_utf8(path).c_str());
         dl_handle_ptr handle { dl_load_library(path) };
         if (!handle) {
             if (!silent) {
                 GGML_LOG_ERROR("%s: failed to load %s\n", __func__, utf16_to_utf8(path).c_str());
+                LOGGD("%s: failed to load %s\n", __func__, utf16_to_utf8(path).c_str());
             }
             return nullptr;
         }
@@ -447,7 +475,7 @@ static std::wstring get_executable_path() {
         }
         path.resize(path.size() * 2);
     }
-
+    LOGGD("exe path %s", base_path.c_str());
     return utf8_to_utf16(base_path + "/");
 #elif defined(_WIN32)
     std::vector<wchar_t> path(MAX_PATH);
@@ -492,9 +520,22 @@ static std::wstring path_separator() {
 }
 
 static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent, const char * user_search_path) {
+    if (nullptr == user_search_path) {
+        user_search_path = "/data/local/tmp";
+    }
     // enumerate all the files that match [lib]ggml-name-*.[so|dll] in the search paths
      // TODO: search system paths
-    std::wstring file_prefix = backend_filename_prefix() + utf8_to_utf16(name) + L"-";
+    //std::wstring file_prefix = backend_filename_prefix() + utf8_to_utf16(name) + L"-";
+    std::wstring file_prefix = backend_filename_prefix() + utf8_to_utf16(name);
+    LOGGD("name %s, user path %s, file_prefix %s", name, user_search_path, utf16_to_utf8(file_prefix).c_str());
+    std::string ldpath= std::string("./:") + user_search_path;
+    if (0 == setenv("LD_LIBRARY_PATH",
+                    ldpath.c_str(),
+                    1)) {
+        LOGGD("setenv %s successfully\n", ldpath.c_str());
+    } else {
+        LOGGD("setenv failure\n");
+    }
     std::vector<std::wstring> search_paths;
     if (user_search_path == nullptr) {
         search_paths.push_back(L"." + path_separator());
@@ -508,6 +549,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
 
     namespace fs = std::filesystem;
     for (const auto & search_path : search_paths) {
+        LOGGD("search path:%s", utf16_to_utf8(search_path).c_str());
         if (!fs::exists(search_path)) {
             continue;
         }
@@ -516,10 +558,22 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
             if (entry.is_regular_file()) {
                 std::wstring filename = entry.path().filename().wstring();
                 std::wstring ext = entry.path().extension().wstring();
+                LOGGD("filename %s", utf16_to_utf8(filename).c_str());
+                LOGGD("ext %s", utf16_to_utf8(ext).c_str());
+
                 if (filename.find(file_prefix) == 0 && ext == backend_filename_suffix()) {
+                    LOGGD("lib path:%s", utf16_to_utf8(entry.path().wstring()).c_str());
+                    std::string qnnlibname = utf16_to_utf8(entry.path().wstring());
+                    if (access(qnnlibname.c_str(), F_OK) != 0) {
+                        LOGGD("qnn lib %s not found", qnnlibname.c_str());
+                    } else{
+                        LOGGD("qnn lib %s found", qnnlibname.c_str());
+                    }
+                    LOGGD("name %s, user path %s, file_prefix %s", name, user_search_path, utf16_to_utf8(file_prefix).c_str());
                     dl_handle_ptr handle { dl_load_library(entry.path().wstring()) };
                     if (!handle && !silent) {
                         GGML_LOG_ERROR("%s: failed to load %s\n", __func__, utf16_to_utf8(entry.path().wstring()).c_str());
+                        LOGGD("%s: failed to load %s\n", __func__, utf16_to_utf8(entry.path().wstring()).c_str());
                     }
                     if (handle) {
                         auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");
@@ -546,18 +600,24 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
     if (best_score == 0) {
         // try to load the base backend
         for (const auto & search_path : search_paths) {
+            LOGGD("search path:%s", utf16_to_utf8(search_path).c_str());
             std::wstring path = search_path + backend_filename_prefix() + utf8_to_utf16(name) + backend_filename_suffix();
+            LOGGD("path:%s", utf16_to_utf8(path).c_str());
             if (fs::exists(path)) {
+                LOGGD("load backend %s",utf16_to_utf8(path).c_str());
                 return get_reg().load_backend(path, silent);
             }
         }
+        LOGGD("return nullptr");
         return nullptr;
     }
 
+    LOGGD("best path:%s", best_path.c_str());
     return get_reg().load_backend(best_path, silent);
 }
 
 void ggml_backend_load_all() {
+    LOGGD("enter ggml_backend_load_all");
     ggml_backend_load_all_from_path(nullptr);
 }
 
@@ -567,7 +627,15 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
 #else
     bool silent = false;
 #endif
+    LOGGD("enter ggml_backend_load_all_from_path");
+#ifdef GGML_USE_CPU
+    LOGGD("use cpu backend");
+#else
+    LOGGD("disable cpu backend");
+#endif
 
+#ifndef GGML_USE_QNN
+    LOGGD("disable qnn backend");
     ggml_backend_load_best("blas", silent, dir_path);
     ggml_backend_load_best("cann", silent, dir_path);
     ggml_backend_load_best("cuda", silent, dir_path);
@@ -580,8 +648,13 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
     ggml_backend_load_best("opencl", silent, dir_path);
     ggml_backend_load_best("musa", silent, dir_path);
     ggml_backend_load_best("cpu", silent, dir_path);
+#else
+    LOGGD("trying to load qnn backend");
+    ggml_backend_load_best("qnn", false, dir_path);
+#endif
     // check the environment variable GGML_BACKEND_PATH to load an out-of-tree backend
     const char * backend_path = std::getenv("GGML_BACKEND_PATH");
+    LOGGD("backend_path %s", backend_path);
     if (backend_path) {
         ggml_backend_load(backend_path);
     }

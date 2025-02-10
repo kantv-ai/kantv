@@ -104,9 +104,9 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     LOGGD("enter llama_inference_main");
     if (backend_type != QNN_BACKEND_GGML) {
 #ifdef GGML_USE_QNN
-        LOGGD("using QNN backend %d", backend);
-        params.main_gpu = backend;
-        params.n_gpu_layers = 1;
+        LOGGD("using QNN backend %d", backend_type);
+        params.main_gpu = backend_type;
+        params.n_gpu_layers = 4096;
 #else
         LOGGW("QNN backend %s is disabled and only ggml backend is supported\n", ggml_backend_qnn_get_devname(backend_type));
         GGML_JNI_NOTIFY("QNN backend %s is disabled and only ggml backend is supported\n", ggml_backend_qnn_get_devname(backend_type));

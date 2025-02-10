@@ -138,6 +138,10 @@ typedef Qnn_ErrorHandle_t (*QnnBackend_ValidateOpConfigFn_t)(Qnn_BackendHandle_t
 /** @brief See QnnBackend_free()*/
 typedef Qnn_ErrorHandle_t (*QnnBackend_FreeFn_t)(Qnn_BackendHandle_t backend);
 
+/** @brief See QnnBackend_getProperty()*/
+typedef Qnn_ErrorHandle_t (*QnnBackend_GetPropertyFn_t)(Qnn_BackendHandle_t backendHandle,
+                                                        QnnBackend_Property_t** properties);
+
 //
 // From QnnContext.h
 //
@@ -184,6 +188,53 @@ typedef Qnn_ErrorHandle_t (*QnnContext_ValidateBinaryFn_t)(
     const void* binaryBuffer,
     Qnn_ContextBinarySize_t binaryBufferSize);
 
+/** @brief See QnnContext_createFromBinaryWithSignal()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_CreateFromBinaryWithSignalFn_t)(
+    Qnn_BackendHandle_t backend,
+    Qnn_DeviceHandle_t device,
+    const QnnContext_Config_t** config,
+    const void* binaryBuffer,
+    Qnn_ContextBinarySize_t binaryBufferSize,
+    Qnn_ContextHandle_t* context,
+    Qnn_ProfileHandle_t profile,
+    Qnn_SignalHandle_t signal);
+
+/** @brief See QnnContext_createFromBinaryListAsync()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_CreateFromBinaryListAsyncFn_t)(
+    Qnn_BackendHandle_t backend,
+    Qnn_DeviceHandle_t device,
+    const QnnContext_Params_t** contextParams,
+    const QnnContext_Config_t** listConfig,
+    Qnn_SignalHandle_t signal);
+
+/** @brief See QnnContext_getBinarySectionSize()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_GetBinarySectionSizeFn_t)(
+    Qnn_ContextHandle_t context,
+    Qnn_GraphHandle_t graph,
+    QnnContext_SectionType_t section,
+    Qnn_ContextBinarySize_t* binaryBufferSize);
+
+/** @brief See QnnContext_getBinarySection()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_GetBinarySectionFn_t)(
+    Qnn_ContextHandle_t context,
+    Qnn_GraphHandle_t graph,
+    QnnContext_SectionType_t section,
+    const QnnContext_Buffer_t* binaryBuffer,
+    Qnn_ContextBinarySize_t* writtenBufferSize,
+    Qnn_ProfileHandle_t profile,
+    Qnn_SignalHandle_t signal);
+/** @brief See QnnContext_applyBinarySection()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_ApplyBinarySectionFn_t)(
+    Qnn_ContextHandle_t context,
+    Qnn_GraphHandle_t graph,
+    QnnContext_SectionType_t section,
+    const QnnContext_Buffer_t* binaryBuffer,
+    Qnn_ProfileHandle_t profile,
+    Qnn_SignalHandle_t signal);
+
+/** @brief See QnnContext_getProperty()*/
+typedef Qnn_ErrorHandle_t (*QnnContext_GetPropertyFn_t)(Qnn_ContextHandle_t contextHandle,
+                                                        QnnContext_Property_t** properties);
 //
 // From QnnGraph.h
 //
@@ -260,6 +311,16 @@ typedef Qnn_ErrorHandle_t (*QnnTensor_CreateContextTensorFn_t)(Qnn_ContextHandle
 /** @brief See QnnTensor_createGraphTensor()*/
 typedef Qnn_ErrorHandle_t (*QnnTensor_CreateGraphTensorFn_t)(Qnn_GraphHandle_t graph,
                                                              Qnn_Tensor_t* tensor);
+
+/** @brief See QnnTensor_updateContextTensor()*/
+typedef Qnn_ErrorHandle_t (*QnnTensor_UpdateContextTensorsFn_t)(Qnn_ContextHandle_t context,
+                                                                const Qnn_Tensor_t** tensor,
+                                                                uint64_t numTensors);
+
+/** @brief See QnnTensor_updateGraphTensor()*/
+typedef Qnn_ErrorHandle_t (*QnnTensor_UpdateGraphTensorsFn_t)(Qnn_GraphHandle_t graph,
+                                                              const Qnn_Tensor_t** tensor,
+                                                              uint64_t numTensors);
 
 //
 // From QnnLog.h
@@ -464,7 +525,15 @@ typedef struct {
   QnnGraph_GetPropertyFn_t                  graphGetProperty;
 
   QnnContext_ValidateBinaryFn_t             contextValidateBinary;
-
+  QnnContext_CreateFromBinaryWithSignalFn_t contextCreateFromBinaryWithSignal;
+  QnnContext_CreateFromBinaryListAsyncFn_t  contextCreateFromBinaryListAsync;
+  QnnTensor_UpdateGraphTensorsFn_t          tensorUpdateGraphTensors;
+  QnnTensor_UpdateContextTensorsFn_t        tensorUpdateContextTensors;
+  QnnContext_GetBinarySectionSizeFn_t       contextGetBinarySectionSize;
+  QnnContext_GetBinarySectionFn_t           contextGetBinarySection;
+  QnnContext_ApplyBinarySectionFn_t         contextApplyBinarySection;
+  QnnBackend_GetPropertyFn_t                backendGetProperty;
+  QnnContext_GetPropertyFn_t                contextGetProperty;
 } QNN_INTERFACE_VER_TYPE;
 
 /// QNN_INTERFACE_VER_TYPE initializer macro
@@ -524,6 +593,15 @@ typedef struct {
   NULL, /*graphReleaseExecutionEnvironment*/ \
   NULL, /*graphGetProperty*/ \
   NULL, /*contextValidateBinary*/ \
+  NULL, /*contextCreateFromBinaryWithSignal*/\
+  NULL, /*contextCreateFromBinaryListAsync*/ \
+  NULL, /*tensorUpdateGraphTensor*/ \
+  NULL, /*tensorUpdateContextTensor*/ \
+  NULL, /*contextGetBinarySectionSize*/ \
+  NULL, /*contextGetBinarySection*/ \
+  NULL, /*contextApplyBinarySection*/ \
+  NULL, /*backendGetProperty*/ \
+  NULL, /*contextGetProperty*/ \
 }
 
 typedef struct {

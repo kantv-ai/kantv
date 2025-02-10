@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2022-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2022-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -379,6 +379,8 @@ Qnn_ErrorHandle_t QnnDevice_getInfrastructure(const QnnDevice_Infrastructure_t* 
  *         - QNN_DEVICE_ERROR_MEM_ALLOC: failure in allocating memory when creating device
  *         - QNN_DEVICE_ERROR_HARDWARE_UNAVAILABLE: requested hardware resources are unavailable
  *         - QNN_DEVICE_ERROR_UNSUPPORTED_FEATURE: API is not supported
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */

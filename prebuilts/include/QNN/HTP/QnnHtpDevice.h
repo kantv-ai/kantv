@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2022-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2022-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -33,6 +33,7 @@ typedef enum {
   QNN_HTP_DEVICE_ARCH_V69     = 69,
   QNN_HTP_DEVICE_ARCH_V73     = 73,
   QNN_HTP_DEVICE_ARCH_V75     = 75,
+  QNN_HTP_DEVICE_ARCH_V79     = 79,
   
 
   QNN_HTP_DEVICE_ARCH_UNKNOWN = 0x7fffffff
@@ -85,6 +86,24 @@ typedef enum {
   QNN_HTP_DEVICE_TYPE_ON_CHIP = 0,  // HTP cores are inside SoC
   QNN_HTP_DEVICE_TYPE_UNKNOWN = 0x7fffffff
 } QnnHtpDevice_DeviceType_t;
+
+
+/**
+ * @brief QNN HTP Device core type
+ * This enumeration provides information about the core type inside the SOC.
+ *
+ * For online operation, the caller should retrieve this information from `QnnDevice_getPlatformInfo`.
+ * For offline operation, the caller needs to create a `QnnDevice_CoreInfo_t` with the correct core type,
+ * and then use it to create the `QnnDevice_PlatformInfo_t`.
+ */
+typedef enum {
+  QNN_HTP_CORE_TYPE_NSP     = 0,
+  
+
+  //supported coreType are < QNN_CORE_TYPE_MAX
+  QNN_HTP_CORE_TYPE_MAX,
+  QNN_HTP_CORE_TYPE_UNKNOWN = 0x7fffffff
+} QnnHtpDevice_CoreType_t;
 
 /**
  * This structure provides info about the NSP device inside SoC

@@ -1,8 +1,8 @@
 //==============================================================================
 //
-// Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
-// All Rights Reserved.
-// Confidential and Proprietary - Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All rights reserved.
+//  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //==============================================================================
 
@@ -56,6 +56,8 @@ typedef enum {
   QNN_TENSOR_ERROR_UNSUPPORTED_TENSOR_PARAM = QNN_MIN_ERROR_TENSOR + 5,
   /// (deprecated) A hash collision has occurred with a previously registered tensor's name.
   QNN_TENSOR_ERROR_NAME_HASH_COLLISION = QNN_MIN_ERROR_TENSOR + 6,
+  /// Tensor provided for update is invalid.
+  QNN_TENSOR_ERROR_INCOMPATIBLE_TENSOR_UPDATE = QNN_MIN_ERROR_TENSOR + 7,
   /// There is optional API component that is not supported yet. See QnnProperty.
   QNN_TENSOR_ERROR_UNSUPPORTED_FEATURE = QNN_COMMON_ERROR_NOT_SUPPORTED,
 
@@ -153,6 +155,65 @@ Qnn_ErrorHandle_t QnnTensor_createContextTensor(Qnn_ContextHandle_t context, Qnn
  */
 QNN_API
 Qnn_ErrorHandle_t QnnTensor_createGraphTensor(Qnn_GraphHandle_t graph, Qnn_Tensor_t* tensor);
+
+/**
+ * @brief Update a graph tensor with the new provided tensor information.
+ *        Tensors provided here are associated with the tensor in the backend through the ID field.
+ *        Valid fields to update are: data and quantization parameters for UPDATEABLE_STATIC
+ *        tensors, quantization parameters for UPDATEABLE_NATIVE, UPDATEABLE_APP_READ,
+ *        UPDATEABLE_APP_WRITE, and UPDATEABLE_APP_READWRITE tensors.
+ *        Multiple calls to QnnTensor_updateGraphTensors() can be made, but the updates will
+ *        not take effect until QnnGraph_finalize() is called.
+ *        Backends may support a subset of updateable tensor types.
+
+ *
+ *  @return Error code:
+ *         - QNN_SUCCESS: Successfully updated the graph tensors
+ *         - QNN_TENSOR_ERROR_INVALID_HANDLE: Provided graph handle is invalid
+ *         - QNN_TENSOR_ERROR_INVALID_TENSOR_PARAM: One or more tensor parameters is invalid
+ *         - QNN_TENSOR_ERROR_UNSUPPORTED_TENSOR_PARAM: One or more tensor parameters are
+ *           unsupported
+ *         - QNN_GRAPH_ERROR_GRAPH_NOT_FINALIZED: graph needs to be finalized before updating
+ *           graph tensors.
+ *         - QNN_COMMON_ERROR_MEM_ALLOC: Failure in creating tensor due to issues with memory
+ *           allocation
+ *         - QNN_TENSOR_ERROR_INCOMPATIBLE_TENSOR_UPDATE: provided tensor is invalid and cannot
+ *           be applied as an update.
+ *         - QNN_TENSOR_ERROR_UNSUPPORTED_FEATURE: some API feature is not supported yet
+ *
+ */
+QNN_API
+Qnn_ErrorHandle_t QnnTensor_updateGraphTensors(Qnn_GraphHandle_t graph,
+                                               const Qnn_Tensor_t** tensor,
+                                               uint64_t numTensors);
+
+/**
+ * @brief Update a context tensor with the new provided tensor information.
+ *        Tensors provided here are associated with the tensor in the backend through the ID field.
+ *        Valid fields to update are: data and quantization parameters for UPDATEABLE_STATIC
+ *        tensors, quantization parameters for UPDATEABLE_NATIVE, UPDATEABLE_APP_READ,
+ *        UPDATEABLE_APP_WRITE, and UPDATEABLE_APP_READWRITE tensors. Multiple calls to
+ *        QnnTensor_updateContextTensors() can be made, but the updates will not take effect until
+ *        QnnGraph_finalize() is called for one or more of the graphs to which the context tensors
+ *        are associated. Backends may support a subset of updateable tensor types.
+ *
+ *  @return Error code:
+ *         - QNN_SUCCESS: Successfully updated the context tensor
+ *         - QNN_TENSOR_ERROR_INVALID_HANDLE: Provided context handle is invalid
+ *         - QNN_TENSOR_ERROR_INVALID_TENSOR_PARAM: One or more tensor parameters is invalid
+ *         - QNN_TENSOR_ERROR_UNSUPPORTED_TENSOR_PARAM: One or more tensor parameters are
+ *           unsupported
+ *         - QNN_COMMON_ERROR_MEM_ALLOC: Failure in creating tensor due to issues with memory
+ *           allocation
+ *         - QNN_TENSOR_ERROR_INCOMPATIBLE_TENSOR_UPDATE: provided tensor is invalid and cannot
+ *           be applied as an update.
+ *         - QNN_TENSOR_ERROR_UNSUPPORTED_FEATURE: some API feature is not supported yet
+ *
+ */
+QNN_API
+Qnn_ErrorHandle_t QnnTensor_updateContextTensors(Qnn_ContextHandle_t context,
+                                                 const Qnn_Tensor_t** tensor,
+                                                 uint64_t numTensors);
 
 #ifdef __cplusplus
 }  // extern "C"

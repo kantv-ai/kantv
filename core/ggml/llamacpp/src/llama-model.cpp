@@ -1261,6 +1261,8 @@ bool llama_model::load_tensors(llama_model_loader & ml) {
     const auto & tensor_split = params.tensor_split;
 
     const int n_layer = hparams.n_layer;
+    int main_gpu = params.main_gpu;
+    LOGGD("main gpu %d", params.main_gpu);
 
     const bool use_mmap_buffer = true;
 
@@ -1349,6 +1351,38 @@ bool llama_model::load_tensors(llama_model_loader & ml) {
 
             ctx_map[buft] = ctx;
             pimpl->ctxs.emplace_back(ctx);
+
+            //weiguo,2022-02-05,added
+            if (0) {
+                int cnt = 0;
+                ggml_backend_t backend = nullptr;
+                ggml_backend_buffer_type_t result = ggml_backend_cpu_buffer_type();
+                for (size_t i = 0; i < ggml_backend_dev_count(); ++i) {
+                    ggml_backend_dev_t dev = ggml_backend_dev_get(i);
+                    LOGGD("Backend %zu/%zu: %s\n", i + 1, ggml_backend_dev_count(),
+                           ggml_backend_dev_name(dev));
+                    if (ggml_backend_dev_type(dev) == GGML_BACKEND_DEVICE_TYPE_CPU) {
+                        LOGGD("  Skipping CPU backend\n");
+                        continue;
+                    }
+                    backend = ggml_backend_dev_init(dev, reinterpret_cast<const char *>(i));
+                    GGML_ASSERT(backend != NULL);
+                    if (backend != nullptr) {
+                        LOGGD("%s: initialize %s backend\n", __func__, ggml_backend_dev_name(dev));
+                    }
+
+                    if (ggml_backend_dev_type(dev) == GGML_BACKEND_DEVICE_TYPE_GPU) {
+                        if (cnt == 0 || cnt == main_gpu) {
+                            result = ggml_backend_dev_buffer_type(dev);
+                        }
+
+                        if (++cnt > main_gpu) {
+                            break;
+                        }
+                    }
+                }
+                ggml_backend_alloc_ctx_tensors(ctx, backend);
+            }
 
             return ctx;
         }

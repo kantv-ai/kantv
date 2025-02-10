@@ -1,6 +1,6 @@
 //==============================================================================
 //
-// Copyright (c) 2022-2023 Qualcomm Technologies, Inc.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 // All Rights Reserved.
 // Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -120,6 +120,11 @@ typedef uint32_t QnnHtpPerfInfrastructure_RpcControlLatency_t;
 typedef uint32_t QnnHtpPerfInfrastructure_RpcPollingTime_t;
 
 /**
+ * @brief Allows client to set up the adaptive polling time in microseconds
+ */
+typedef uint32_t QnnHtpPerfInfrastructure_AdaptivePollingTime_t;
+
+/**
  * @brief Allows client to set up the HMX timeout interval in microseconds
  */
 typedef uint32_t QnnHtpPerfInfrastructure_HmxTimeoutIntervalUs_t;
@@ -132,6 +137,27 @@ typedef uint32_t QnnHtpPerfInfrastructure_HmxTimeoutIntervalUs_t;
  * Grow size provided in bytes and defaults to 16MB
  */
 typedef uint32_t QnnHtpPerfInfrastructure_MemGrowSize_t;
+
+/**
+ * @brief Allows client to set default values for HMX frequency.
+ * If enabled 1 HMX vote will scale with DCVS Corner if 0 HMX vote
+ * needs to be specified manually.
+ *
+ */
+typedef uint32_t QnnHtpPerfInfrastructure_HmxDefault_Vote_t;
+
+/**
+ *  @brief Perf modes to specify clock frequency level within
+ *  target voltage corner currently applies only for HMX config.
+ */
+typedef enum {
+  // To select max frequency at target voltage corner.
+  QNN_HTP_PERF_INFRASTRUCTURE_CLK_PERF_HIGH = 0,
+  // To select min frequency at target voltage corner.
+  QNN_HTP_PERF_INFRASTRUCTURE_CLK_PERF_LOW,
+  /// UNKNOWN value that must not be used by client
+  QNN_HTP_PERF_INFRASTRUCTURE_CLK_PERF_UNKNOWN = 0x7fffffff
+} QnnHtpPerfInfrastructure_ClkPerfMode_t;
 
 /**
  * @brief These are the different voltage corners that can
@@ -179,6 +205,59 @@ typedef enum {
   /// UNKNOWN value that must not be used by client
   DCVS_VOLTAGE_VCORNER_UNKNOWN = 0x7fffffff
 } QnnHtpPerfInfrastructure_VoltageCorner_t;
+
+/**
+ * @brief These are the expanded voltage corners that can
+ * be requested by the client to influence the voting scheme
+ * for DCVS
+ *
+ */
+typedef enum {
+  /// Maps to HAP_DCVS_EXP_VCORNER_DISABLE.
+  /// Disable setting up voltage corner
+  DCVS_EXP_VCORNER_DISABLE = 0,
+  /// Maps to HAP_DCVS_EXP_VCORNER_MIN.
+  /// Set voltage corner to minimum value supported on platform
+  DCVS_EXP_VCORNER_MIN = 0x100,
+  /// Maps to HAP_DCVS_EXP_VCORNER_LOW_SVS_D2.
+  /// Set voltage corner to LOWSVS_D2 value for the platform
+  DCVS_EXP_VCORNER_LOW_SVS_D2 = 0x134,
+  /// Maps to HAP_DCVS_EXP_VCORNER_LOW_SVS_D1.
+  /// Set voltage corner to LOWSVS_D1 value for the platform
+  DCVS_EXP_VCORNER_LOW_SVS_D1 = 0x138,
+  /// Maps to HAP_DCVS_EXP_VCORNER_LOW_SVS.
+  /// Set voltage corner to LOWSVS value for the platform
+  DCVS_EXP_VCORNER_LOW_SVS = 0x140,
+  /// Maps to HAP_DCVS_EXP_VCORNER_SVS.
+  /// Set voltage corner to SVS value for the platform
+  DCVS_EXP_VCORNER_SVS = 0x180,
+  /// Maps to HAP_DCVS_EXP_VCORNER_SVS_L1.
+  /// Set voltage corner to SVS_L1 value for the platform
+  DCVS_EXP_VCORNER_SVS_L1 = 0x1C0,
+  /// Maps to HAP_DCVS_EXP_VCORNER_NOM.
+  /// Set voltage corner to NOM value for the platform
+  DCVS_EXP_VCORNER_NOM = 0x200,
+  /// Maps to HAP_DCVS_EXP_VCORNER_NOM_L1.
+  /// Set voltage corner to NOM_L1 value for the platform
+  DCVS_EXP_VCORNER_NOM_L1 = 0x240,
+  /// Maps to HAP_DCVS_EXP_VCORNER_TUR.
+  /// Set voltage corner to TURBO value for the platform
+  DCVS_EXP_VCORNER_TUR = 0x280,
+  /// Maps to HAP_DCVS_EXP_VCORNER_TUR_L1.
+  /// Set voltage corner to TURBO_L1 value for the platform
+  DCVS_EXP_VCORNER_TUR_L1 = 0x2A0,
+  /// Maps to HAP_DCVS_EXP_VCORNER_TUR_L2.
+  /// Set voltage corner to TURBO_L2 value for the platform
+  DCVS_EXP_VCORNER_TUR_L2 = 0x2B0,
+  /// Maps to HAP_DCVS_EXP_VCORNER_TUR_L3.
+  /// Set voltage corner to TURBO_L3 value for the platform
+  DCVS_EXP_VCORNER_TUR_L3 = 0x2C0,
+  /// Maps to HAP_DCVS_EXP_VCORNER_MAX.
+  /// Selects the maximum voltage corner defined for the chipset
+  DCVS_EXP_VCORNER_MAX = 0xFFFF,
+  /// UNKNOWN value that must not be used by client
+  DCVS_EXP_VCORNER_UNKNOWN = 0x7fffffff
+} QnnHtpPerfInfrastructure_ExpVoltageCorner_t;
 
 /**
  * @brief This enum defines all the possible power mode
@@ -239,6 +318,21 @@ typedef struct {
 } QnnHtpPerfInfrastructure_DcvsV3_t;
 
 /**
+ * @brief This struct provides performance infrastructure configuration
+ *        associated with setting up of hmxv2 which allows to select
+ *        hmx corner separately. If hmxPickDefault is 1 all voltage corner
+ *        params will be ignored. Ensure to use same contextID as used for
+ *        DCVS vote.
+ */
+typedef struct {
+  QnnHtpPerfInfrastructure_HmxDefault_Vote_t hmxPickDefault;
+  QnnHtpPerfInfrastructure_ExpVoltageCorner_t hmxVoltageCornerMin;
+  QnnHtpPerfInfrastructure_ExpVoltageCorner_t hmxVoltageCornerTarget;
+  QnnHtpPerfInfrastructure_ExpVoltageCorner_t hmxVoltageCornerMax;
+  QnnHtpPerfInfrastructure_ClkPerfMode_t hmxPerfMode;
+} QnnHtpPerfInfrastructure_HmxV2_t;
+
+/**
  * @brief This enum defines all the possible performance
  *        options in Htp Performance Infrastructure that
  *        relate to setting up of power levels
@@ -256,6 +350,12 @@ typedef enum {
   /// config HMX timeout interval in us. The HMX is turned off after the set interval
   /// time if no interaction with it after an inference is finished.
   QNN_HTP_PERF_INFRASTRUCTURE_POWER_CONFIGOPTION_HMX_TIMEOUT_INTERVAL_US = 4,
+  /// config HMX V2 voting parameters only on supported chips
+  QNN_HTP_PERF_INFRASTRUCTURE_POWER_CONFIGOPTION_HMX_V2 = 5,
+  /// config enum implies the usage of adaptivePollingTime struct
+  /// this config can only be enabled in the RPC polling mode
+  /// if enabled, this config is applied to the entire process
+  QNN_HTP_PERF_INFRASTRUCTURE_POWER_CONFIGOPTION_ADAPTIVE_POLLING_TIME = 6,
   /// UNKNOWN config option which must not be used
   QNN_HTP_PERF_INFRASTRUCTURE_POWER_CONFIGOPTION_UNKNOWN = 0x7fffffff
 } QnnHtpPerfInfrastructure_PowerConfigOption_t;
@@ -271,6 +371,8 @@ typedef struct {
     QnnHtpPerfInfrastructure_RpcControlLatency_t rpcControlLatencyConfig;
     QnnHtpPerfInfrastructure_RpcPollingTime_t rpcPollingTimeConfig;
     QnnHtpPerfInfrastructure_HmxTimeoutIntervalUs_t hmxTimeoutIntervalUsConfig;
+    QnnHtpPerfInfrastructure_HmxV2_t hmxV2Config;
+    QnnHtpPerfInfrastructure_AdaptivePollingTime_t adaptivePollingTimeConfig;
   };
 } QnnHtpPerfInfrastructure_PowerConfig_t;
 
@@ -347,6 +449,8 @@ typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_CreatePowerConfigIdFn_t)(
  *         \n QNN_SUCCESS: No error encountered
  *         \n QNN_HTP_PERF_INFRASTRUCTURE_ERROR_INVALID_INPUT if power configuration
  *            id does not exist
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  */
 typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_DestroyPowerConfigIdFn_t)(
     uint32_t powerConfigId);
@@ -372,6 +476,8 @@ typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_DestroyPowerConfigIdFn_t)(
  *         \n QNN_SUCCESS: No error encountered
  *         \n QNN_HTP_PERF_INFRASTRUCTURE_ERROR_INVALID_INPUT if power configuration
  *            does not exist
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  */
 typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_SetPowerConfigFn_t)(
     uint32_t powerConfigId, const QnnHtpPerfInfrastructure_PowerConfig_t** config);
@@ -392,6 +498,8 @@ typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_SetPowerConfigFn_t)(
  *         \n QNN_SUCCESS: No error encountered
  *         \n QNN_HTP_PERF_INFRASTRUCTURE_ERROR_INVALID_INPUT if deviceId/coreId
  *            or memory configuration does not exist
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         \n QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  */
 typedef Qnn_ErrorHandle_t (*QnnHtpPerfInfrastructure_SetMemoryConfigFn_t)(
     uint32_t deviceId, uint32_t coreId, const QnnHtpPerfInfrastructure_MemoryConfig_t** config);

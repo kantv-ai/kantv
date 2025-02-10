@@ -1,6 +1,6 @@
 //==============================================================================
 //
-//  Copyright (c) 2020-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -269,6 +269,25 @@ typedef enum {
 } QnnGpu_MemoryLayout_t;
 
 /**
+ * @brief A struct to specify blockSize for weight Tensor and tensorId for weight Param tensor
+ */
+typedef struct {
+  // Block Quantization, block Sizes
+  uint32_t* bqBlockSize;
+  /// Tensor Id for Quantization encodings
+  uint32_t bqEncodingTensorId;
+} QnnGpu_BlockEncodingInfo_t;
+
+// clang-format off
+/// QnnGpu_MemoryObject_t initializer macro
+#define QNN_GPU_BLOCK_ENCODING_INFO_INIT                   \
+  {                                                   \
+    NULL,                      /*bqBlockSize*/    \
+    0u                         /*bqEncodingTensorId*/      \
+  }
+// clang-format on
+
+/**
  * @brief A QNN GPU struct specifying a memory object
  *        This struct is used with the following kernel argument types:
  *          - QNN_GPU_KERNEL_ARG_TYPE_OP_INPUT_READ
@@ -307,6 +326,8 @@ typedef struct {
   /// Op package specific layout identifier          \n
   /// Default is QNN_GPU_MEM_LAYOUT_UNDEFINED if not already specified by a prior operation
   QnnGpu_MemoryLayout_t layout;
+  /// Block Quantization Tensor Information
+  QnnGpu_BlockEncodingInfo_t blockEncodingInfo;
 } QnnGpu_MemoryObject_t;
 
 // clang-format off
@@ -318,7 +339,8 @@ typedef struct {
     NULL,                           /*dimensions*/    \
     NULL,                           /*offsets*/       \
     0u,                             /*numDimensions*/ \
-    QNN_GPU_MEM_LAYOUT_UNDEFINED    /*layout*/        \
+    QNN_GPU_MEM_LAYOUT_UNDEFINED,   /*layout*/        \
+    QNN_GPU_BLOCK_ENCODING_INFO_INIT  /*blockEncodingInfo*/    \
   }
 // clang-format on
 
@@ -356,6 +378,8 @@ typedef struct _QnnOpPackage_Node_t {
   const Qnn_OpConfig_t** configs;
   /// Null-terminated array of tensor storage type pointers called out in the config
   const QnnGpu_TensorStorageType_t** storageTypes;
+  /// Kernel variant index, if set then used by OpPackage to determine kernel selection
+  int32_t kernelVariant;
 } QnnGpuOpPackage_Node_t;
 
 //=============================================================================
@@ -410,6 +434,8 @@ typedef enum {
   QNN_GPU_KERNEL_ARG_TYPE_LOCAL = 7,
   /// Null pointer kernel argument
   QNN_GPU_KERNEL_ARG_TYPE_NULL_PTR = 8,
+  /// Operation tensor parameter used as kernel input
+  QNN_GPU_KERNEL_ARG_TYPE_OP_TENSOR_PARAM = 9,
 } QnnGpu_KernelArgType_t;
 
 /**
@@ -548,6 +574,34 @@ typedef enum {
 } QnnGpu_KernelSourceType_t;
 
 /**
+ * @brief This enum defines QNN GPU kernel tuning options.
+ */
+typedef enum {
+  /// local work size tuning
+  QNN_GPU_KERNEL_TUNING_LOCAL_WORK_SIZE = 0,
+  QNN_GPU_KERNEL_TUNING_UNDEFINED       = 0x7FFFFFFF
+} QnnGpu_KernelTuningOption_t;
+
+/**
+ * @brief This struct provides local-work-size tuning configuration.
+ */
+typedef struct {
+  uint32_t minValue[3];
+  uint32_t maxValue[3];
+  uint32_t stepSize[3];
+} QnnGpu_KernelLocalWorkSizeTuning_t;
+
+/**
+ * @brief This struct provides QNN GPU kernel tuning configuration.
+ */
+typedef struct {
+  QnnGpu_KernelTuningOption_t option;
+  union UNNAMED {
+    QnnGpu_KernelLocalWorkSizeTuning_t lws;
+  };
+} QnnGpu_KernelTuningConfig_t;
+
+/**
  * @brief A QNN GPU struct specifying a kernel.
  */
 typedef struct {
@@ -573,6 +627,8 @@ typedef struct {
   const char* name;
   /// If non-zero, kernel will be enqueued during execute even if it is static
   uint32_t isDynamic;
+  /// Null-terminated array to provide kernel tuning configurations.
+  QnnGpu_KernelTuningConfig_t** tuningConfigs;
   /// Reserved field, must be null
   void* reserved;
 } QnnGpu_Kernel_t;
@@ -592,6 +648,7 @@ typedef struct {
     NULL,                            /*args*/            \
     NULL,                            /*name*/            \
     0u,                              /*isDynamic*/       \
+    NULL,                            /*tuningConfigs*/   \
     NULL                             /*reserved*/        \
   }
 // clang-format on

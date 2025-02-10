@@ -1,10 +1,10 @@
-//=============================================================================
+//==============================================================================
 //
-//  Copyright (c) 2022-2023 Qualcomm Technologies, Inc.
-//  All Rights Reserved.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All rights reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
-//=============================================================================
+//==============================================================================
 
 /** @file
  *  @brief QNN LPAI component Backend API.
@@ -62,6 +62,10 @@ typedef enum {
   QNN_LPAI_BACKEND_HW_VERSION_V4 = 4,
   /// LPAI HW version v5
   QNN_LPAI_BACKEND_HW_VERSION_V5 = 5,
+  /// LPAI HW version v6
+  QNN_LPAI_BACKEND_HW_VERSION_V6 = 6,
+  /// LPAI HW default version v5
+  QNN_LPAI_BACKEND_HW_VERSION_DEFAULT = QNN_LPAI_BACKEND_HW_VERSION_V5,
   /// UNKNOWN enum event that must not be used
   QNN_LPAI_BACKEND_HW_VERSION_UNKNOWN = 0x7fffffff,
 } QnnLpaiBackend_HwVersion_t;
@@ -74,36 +78,69 @@ typedef enum {
 //   Implementation Definition
 //------------------------------------------------------------------------------
 
-// clang-format off
-
 /**
  * @brief Structure describing the set of configurations supported by the backend.
  *        Objects of this type are to be referenced through QnnBackend_CustomConfig_t.
  */
 typedef struct {
-    QnnLpaiBackend_Target_t      lpaiTarget;
-    QnnLpaiBackend_HwVersion_t   hwVersion;
-    uint32_t                     enableLayerFusion;
-    uint32_t                     enableBatchnormFold;
-    uint32_t                     enableChannelAlign;
-    uint32_t                     enablePadSplit;
-    uint32_t                     excludeIo;
-} QnnLpaiBackend_CustomConfig_t ;
+  QnnLpaiBackend_Target_t lpaiTarget;
+  QnnLpaiBackend_HwVersion_t hwVersion;
+} QnnLpaiBackend_CustomConfig_t;
 
 // clang-format off
 /// QnnLpaiBackend_CustomConfig_t initializer macro
-#define QNN_LPAI_BACKEND_CUSTOM_CONFIG_INIT                   \
-  {                                                           \
-    QNN_LPAI_BACKEND_TARGET_ADSP,     /*lpaiTarget*/          \
-    QNN_LPAI_BACKEND_HW_VERSION_V4,   /*hwVersion*/           \
-    1u,                               /*enableLayerFusion*/   \
-    1u,                               /*enableBatchnormFold*/ \
-    0u,                               /*enableChannelAlign*/  \
-    0u,                               /*enablePadSplit*/      \
-    0u                                /*excludeIo*/           \
+#define QNN_LPAI_BACKEND_CUSTOM_CONFIG_INIT                                 \
+  {                                                                         \
+    QNN_LPAI_BACKEND_TARGET_ADSP,        /*lpaiTarget*/                     \
+    QNN_LPAI_BACKEND_HW_VERSION_DEFAULT, /*hwVersion*/                      \
   }
-
 // clang-format on
+
+/**
+ * @brief Enum describing the set of properties supported by the backend.
+ *        Objects of this type are to be referenced through QnnBackend_CustomProperty_t.
+ */
+typedef enum {
+  // get the start address alignment and size alignment requirement of buffers, see QnnLpaiBackend_BufferAlignmentReq_t
+  QNN_LPAI_BACKEND_GET_PROP_ALIGNMENT_REQ,
+  // indicate if cached binary buffer need to be persistent until QnnContext_free is called, return bool
+  // if true is returned, need to specify QNN_CONTEXT_CONFIG_PERSISTENT_BINARY during QnnContext_createFromBinary
+  QNN_LPAI_BACKEND_GET_PROP_REQUIRE_PERSISTENT_BINARY,
+  // Unused, present to ensure 32 bits.
+  QNN_LPAI_BACKEND_GET_PROP_UNDEFINED = 0x7fffffff
+} QnnLpaiBackend_GetPropertyOption_t;
+
+typedef struct {
+  // the start address of the buffer must be startAddrAlignment-byte aligned
+  uint32_t startAddrAlignment;
+  // the allocated buffer must be a multiple of sizeAlignment bytes
+  uint32_t sizeAlignment;
+} QnnLpaiBackend_BufferAlignmentReq_t;
+
+// clang-format off
+/// QnnLpaiBackend_BufferAlignmentReq_t initializer macro
+#define QNN_LPAI_BACKEND_ALIGNMENT_REQ_INIT                          \
+  {                                                                  \
+    0u,                                      /*startAddrAlignment*/  \
+    0u                                       /*sizeAlignment*/       \
+  }
+// clang-format on
+
+// used by QnnBackend_getProperty
+typedef struct {
+  uint32_t option;
+  void* property;
+} QnnLpaiBackend_CustomProperty_t;
+
+// clang-format off
+/// QnnLpaiBackend_CustomProperty_t initializer macro
+#define QNN_LPAI_BACKEND_CUSTOM_PROPERTY_INIT                        \
+  {                                                                  \
+    QNN_LPAI_BACKEND_GET_PROP_UNDEFINED,               /*option*/    \
+    NULL                                               /*property*/  \
+  }
+// clang-format on
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

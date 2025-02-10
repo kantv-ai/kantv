@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2022-2024 Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -48,6 +48,7 @@ typedef enum {
   QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_RETRIES           = 2,
   QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_OPTIMIZATION_FLAG = 3,
   QNN_HTP_GRAPH_OPTIMIZATION_TYPE_ENABLE_DLBC                = 4,
+  QNN_HTP_GRAPH_OPTIMIZATION_TYPE_ENABLE_DLBC_WEIGHTS        = 5,
   
   QNN_HTP_GRAPH_OPTIMIZATION_TYPE_UNKNOWN                    = 0x7fffffff
 } QnnHtpGraph_OptimizationType_t;
@@ -61,32 +62,37 @@ typedef enum {
  *        Below is the Map between QnnHtpGraph_OptimizationType_t and allowable values:
  *
  *        \verbatim embed:rst:leading-asterisk
- *        +----+------------------------------------------------------------+---------------------------------------------------------------------+
- *        | #  | OptimizationType option                                    | Allowable values                                                    |
- *        +====+============================================================+=====================================================================+
- *        | 1  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_SCHEDULE_THRESHOLD         | Reserved                                                            |
- *        +----+------------------------------------------------------------+---------------------------------------------------------------------+
- *        | 2  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_RETRIES           | Reserved                                                            |
- *        +----+------------------------------------------------------------+---------------------------------------------------------------------+
- *        | 3  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_OPTIMIZATION_FLAG | Defines the optimization strategy used by the HTP backend           |
- *        |    |                                                            |                                                                     |
- *        |    |                                                            |   1 = Faster preparation time, less optimal graph                   |
- *        |    |                                                            |                                                                     |
- *        |    |                                                            |   2 = Longer preparation time, more optimal graph                   |
- *        |    |                                                            |                                                                     |
- *        |    |                                                            |   3 = Longest preparation time, most likely even more optimal graph:|
- *        |    |                                                            |       QNN_HTP_DEVICE_CONFIG_OPTION_SOC configuration will be taken  |
- *        |    |                                                            |       into account when possible, details see HTP Backend Specific  |
- *        |    |                                                            |       Page                                                          |
- *        +----+------------------------------------------------------------+---------------------------------------------------------------------+
- *        | 4  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_ENABLE_DLBC                | Reserved                                                            |
- *        +----+------------------------------------------------------------+---------------------------------------------------------------------+
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
+ *        | #  | OptimizationType option                                            | Allowable values                                                    |
+ *        +====+====================================================================+=====================================================================+
+ *        | 1  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_SCHEDULE_THRESHOLD                 | Reserved                                                            |
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
+ *        | 2  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_RETRIES                   | Reserved                                                            |
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
+ *        | 3  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_FINALIZE_OPTIMIZATION_FLAG         | Defines the optimization strategy used by the HTP backend           |
+ *        |    |                                                                    |                                                                     |
+ *        |    |                                                                    |   1 = Faster preparation time, less optimal graph                   |
+ *        |    |                                                                    |                                                                     |
+ *        |    |                                                                    |   2 = Longer preparation time, more optimal graph                   |
+ *        |    |                                                                    |                                                                     |
+ *        |    |                                                                    |   3 = Longest preparation time, most likely even more optimal graph:|
+ *        |    |                                                                    |       QNN_HTP_DEVICE_CONFIG_OPTION_SOC configuration will be taken  |
+ *        |    |                                                                    |       into account when possible, details see HTP Backend Specific  |
+ *        |    |                                                                    |       Page                                                          |
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
+ *        | 4  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_ENABLE_DLBC                        | Reserved                                                            |
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
+ *        | 5  | QNN_HTP_GRAPH_OPTIMIZATION_TYPE_ENABLE_DLBC_WEIGHTS                | Enables DLBC weights compression                                    |
+ *        +----+--------------------------------------------------------------------+---------------------------------------------------------------------+
  *        \endverbatim
  */
 typedef struct {
   QnnHtpGraph_OptimizationType_t type;
   float floatValue;
 } QnnHtpGraph_OptimizationOption_t;
+
+
+
 
 /// QnnHtpGraph_OptimizationOption_t initializer macro
 #define QNN_HTP_GRAPH_OPTIMIZATION_OPTION_INIT              \
@@ -103,11 +109,19 @@ typedef struct {
 typedef enum {
   QNN_HTP_GRAPH_CONFIG_OPTION_OPTIMIZATION                       = 1,
   QNN_HTP_GRAPH_CONFIG_OPTION_PRECISION                          = 2,
-  QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE                          = 3,
+  QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE_IN_MB                    = 3,
+  QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE                          = QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE_IN_MB,
   QNN_HTP_GRAPH_CONFIG_OPTION_FOLD_RELU_ACTIVATION_INTO_CONV_OFF = 4,
   QNN_HTP_GRAPH_CONFIG_OPTION_SHORT_DEPTH_CONV_ON_HMX_OFF        = 5,
   QNN_HTP_GRAPH_CONFIG_OPTION_NUM_HVX_THREADS                    = 6,
+  QNN_HTP_GRAPH_CONFIG_OPTION_FINALIZE_CONFIG                    = 7,
   
+  
+  
+  
+  QNN_HTP_GRAPH_CONFIG_OPTION_WEIGHTS_PACKING                    = 12,
+  QNN_HTP_GRAPH_CONFIG_OPTION_ASSUME_SAME_QUANT                  = 13,
+  QNN_HTP_GRAPH_CONFIG_OPTION_RESERVED                           = 0x7fff0000,
   QNN_HTP_GRAPH_CONFIG_OPTION_UNKNOWN                            = 0x7fffffff
 } QnnHtpGraph_ConfigOption_t;
 
@@ -119,7 +133,13 @@ typedef enum {
 //   Implementation Definition
 //------------------------------------------------------------------------------
 
-// clang-format off
+/**
+ * @brief A struct for different config parameters in a key value format.
+ */
+typedef struct {
+  const char* key;
+  Qnn_Scalar_t value;
+} QnnHtpGraph_FinalizeConfig_t;
 
 /**
  * @brief        Structure describing the set of configurations supported by graph.
@@ -132,21 +152,34 @@ typedef enum {
  *               Below is the Map between QnnHtpGraph_ConfigOption_t and config value
  *
  *               \verbatim embed:rst:leading-asterisk
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | #  | Config Option                                                     | Configuration Struct/value         |
- *               +====+===================================================================+====================================+
- *               | 1  | QNN_HTP_GRAPH_CONFIG_OPTION_OPTIMIZATION                          | QnnHtpGraph_OptimizationOption_t   |
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | 2  | QNN_HTP_GRAPH_CONFIG_OPTION_PRECISION                             | Qnn_Precision_t                    |
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | 3  | QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE                             | uint32_t                           |
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | 4  | QNN_HTP_GRAPH_CONFIG_OPTION_FOLD_RELU_ACTIVATION_INTO_CONV_OFF    | bool                               |
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | 5  | QNN_HTP_GRAPH_CONFIG_OPTION_SHORT_DEPTH_CONV_ON_HMX_OFF           | bool                               |
- *               +----+-------------------------------------------------------------------+------------------------------------+
- *               | 6  | QNN_HTP_GRAPH_CONFIG_OPTION_NUM_HVX_THREADS                       | uint32_t                           |
- *               +----+-------------------------------------------------------------------+------------------------------------+
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | #  | Config Option                                                                       | Configuration Struct/value                     |
+ *               +====+=====================================================================================+================================================+
+ *               | 1  | QNN_HTP_GRAPH_CONFIG_OPTION_OPTIMIZATION                                            | QnnHtpGraph_OptimizationOption_t               |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 2  | QNN_HTP_GRAPH_CONFIG_OPTION_PRECISION                                               | Qnn_Precision_t                                |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 3  | QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE_IN_MB/QNN_HTP_GRAPH_CONFIG_OPTION_VTCM_SIZE   | uint32_t                                       |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 4  | QNN_HTP_GRAPH_CONFIG_OPTION_FOLD_RELU_ACTIVATION_INTO_CONV_OFF                      | bool                                           |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 5  | QNN_HTP_GRAPH_CONFIG_OPTION_SHORT_DEPTH_CONV_ON_HMX_OFF                             | bool                                           |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 6  | QNN_HTP_GRAPH_CONFIG_OPTION_NUM_HVX_THREADS                                         | uint32_t                                       |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 7  | QNN_HTP_GRAPH_CONFIG_OPTION_FINALIZE_CONFIG                                         | QnnHtpGraph_FinalizeConfig_t                   |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 12 | QNN_HTP_GRAPH_CONFIG_OPTION_WEIGHTS_PACKING                                         | bool                                           |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               | 13 | QNN_HTP_GRAPH_CONFIG_OPTION_ASSUME_SAME_QUANT                                       | bool                                           |
+ *               +----+-------------------------------------------------------------------------------------+------------------------------------------------+
+ *               +-------------------------+----------------------------------------------------------------+------------------------------------------------+
+ *               | 0x7fff0000 - 0x7ffffffe | QNN_HTP_GRAPH_CONFIG_OPTION_RESERVED                           | These are reserved for internal purposes       |
+ *               +-------------------------+----------------------------------------------------------------+------------------------------------------------+
  *               \endverbatim
  *
  *               NOTE: Option #6 (i.e. QNN_HTP_GRAPH_CONFIG_OPTION_NUM_HVX_THREADS), can only be
@@ -162,7 +195,14 @@ typedef struct {
     bool foldReluActivationIntoConvOff;
     bool shortDepthConvOnHmxOff;
     uint64_t numHvxThreads;
+    void* reserved;
+    QnnHtpGraph_FinalizeConfig_t finalizeConfig;
     
+    
+    
+    
+    bool weightsPacking;
+    bool assumeSameQuant;
   };
 } QnnHtpGraph_CustomConfig_t;
 

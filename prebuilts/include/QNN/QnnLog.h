@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2019-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -115,6 +115,8 @@ typedef void (*QnnLog_Callback_t)(const char* fmt,
  *         - QNN_LOG_ERROR_INVALID_ARGUMENT: if one or more arguments is invalid.
  *         - QNN_LOG_ERROR_MEM_ALLOC: for memory allocation errors.
  *         - QNN_LOG_ERROR_INITIALIZATION: log init failed.
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
@@ -134,6 +136,8 @@ Qnn_ErrorHandle_t QnnLog_create(QnnLog_Callback_t callback,
  *         - QNN_SUCCESS: if the level is changed successfully.
  *         - QNN_LOG_ERROR_INVALID_ARGUMENT: if maxLogLevel is not a valid QnnLog_Level_t level.
  *         - QNN_LOG_ERROR_INVALID_HANDLE: _logHandle_ is not a valid handle
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */

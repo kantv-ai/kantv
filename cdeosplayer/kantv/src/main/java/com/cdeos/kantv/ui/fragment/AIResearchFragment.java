@@ -167,6 +167,7 @@
      //https://huggingface.co/ggerganov/gemma-2b-Q8_0-GGUF/resolve/main/gemma-2b.Q8_0.gguf // 2.67 GB
      //private String ggmlModelFileName = "gemma-2b.Q8_0.gguf";    // 2.67 GB
      //https://huggingface.co/ggml-org/DeepSeek-R1-Distill-Qwen-1.5B-Q4_0-GGUF/blob/main/deepseek-r1-distill-qwen-1.5b-q4_0.gguf //1.07 GB
+     //https://huggingface.co/ggml-org/DeepSeek-R1-Distill-Qwen-32B-Q8_0-GGUF/resolve/main/deepseek-r1-distill-qwen-32b-q8_0.gguf //34.8 GB
      private String strUserInput = "introduce the movie Once Upon a Time in America briefly.\n";
 
      private Context mContext;

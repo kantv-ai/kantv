@@ -1,6 +1,6 @@
 //==============================================================================
 //
-//  Copyright (c) 2022-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2022-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -347,6 +347,44 @@ extern "C" {
  *        value.
  */
 #define QNN_HTP_PROFILE_EVENTTYPE_GRAPH_NUMBER_OF_HVX_THREADS 8001
+
+/**
+ * @brief QnnProfile_EventType_t definition to get profile information
+ *        that corresponds to applying binary section for updatable tensors
+ *        when client invokes QnnContext_ApplyBinarySection.
+ *        It refers to the total time the entire API takes.
+ *        The value returned is time taken in microseconds.
+ */
+#define QNN_HTP_PROFILE_EVENTTYPE_GRAPH_APPLY_BINARY_SECTION_QNN 9001
+
+/**
+ * @brief QnnProfile_EventType_t definition to get profile information
+ *        that corresponds to applying binary section for updatable tensors
+ *        when client invokes QnnContext_ApplyBinarySection.
+ *        It refers to the time of callTransport.
+ *        The value returned is time taken in microseconds.
+ */
+#define QNN_HTP_PROFILE_EVENTTYPE_GRAPH_APPLY_BINARY_SECTION_RPC 9002
+
+/**
+ * @brief QnnProfile_EventType_t definition to get profile information
+ *        that corresponds to applying binary section for updatable tensors
+ *        when client invokes QnnContext_ApplyBinarySection.
+ *        It refers to the remote procedure call on the HTP processor.
+ *        The value returned is time taken in microseconds.
+ */
+#define QNN_HTP_PROFILE_EVENTTYPE_GRAPH_APPLY_BINARY_SECTION_QNN_ACC 9003
+
+/**
+ * @brief QnnProfile_EventType_t definition to get profile information
+ *        that corresponds to applying binary section for updatable tensors
+ *        when client invokes QnnContext_ApplyBinarySection.
+ *        It refers to the Hexnn call
+ *        The value returned is time taken in microseconds.
+ */
+#define QNN_HTP_PROFILE_EVENTTYPE_GRAPH_APPLY_BINARY_SECTION_ACC 9004
+
+
 
 #ifdef __cplusplus
 }

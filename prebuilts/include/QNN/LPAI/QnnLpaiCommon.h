@@ -1,10 +1,10 @@
-//=============================================================================
+//==============================================================================
 //
-//  Copyright (c) 2022-2024 Qualcomm Technologies, Inc.
-//  All Rights Reserved.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All rights reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
-//=============================================================================
+//==============================================================================
 
 /** @file
  *  @brief QNN LPAI Common components
@@ -20,14 +20,16 @@
 
 /// QNN LPAI Backend identifier
 #define QNN_BACKEND_ID_LPAI 12
+#define QNN_BACKEND_ID_LPAI_ISLAND 16
 
 /// QNN LPAI interface provider
 #define QNN_LPAI_INTERFACE_PROVIDER_NAME "LPAI_QTI_AISW"
 
-/// QNN LPAI API Version values
+/// QNN LPAI API Version values for V5
 #define QNN_LPAI_API_VERSION_MAJOR 2
-#define QNN_LPAI_API_VERSION_MINOR 7
-#define QNN_LPAI_API_VERSION_PATCH 1
+#define QNN_LPAI_API_VERSION_MINOR 15
+#define QNN_LPAI_API_VERSION_PATCH 0
+
 
 // clang-format off
 

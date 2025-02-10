@@ -760,7 +760,7 @@ void ggml_bench_matrix(int num_threads, int backend_type) {
 #ifdef GGML_USE_QNN
     if (backend_type !=
         QNN_BACKEND_GGML) {//QNN_BACKEND_GGML is fake QNN backend "ggml", just used to compare performance between QNN backend and original GGML
-        params.use_hwaccel = true;
+        //params.use_hwaccel = true;
         params.no_alloc = true;
 
         backend = ggml_backend_qnn_init(backend_type,
@@ -771,10 +771,10 @@ void ggml_bench_matrix(int num_threads, int backend_type) {
             return;
         }
     } else {
-        backend = ggml_backend_get_default_cpu_backend();
+        backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
     }
 #else
-    //backend = ggml_backend_get_default_cpu_backend();
+    backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
 #endif
 
     ctx = ggml_init(params);
@@ -5809,10 +5809,10 @@ int qnn_matrix(int n_backend_type, int n_op_type) {
                 return 1;
             }
         } else {
-            backend = ggml_backend_get_default_cpu_backend();
+            backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
         }
 #else
-        backend = ggml_backend_get_default_cpu_backend();
+        backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
 #endif
 
         ctx_size += ggml_row_size(GGML_TYPE_F32, sizex * sizey);
@@ -6210,10 +6210,10 @@ int qnn_ggml(int n_backend_type, int n_ggml_op_type) {
             return 1;
         }
     } else {
-        backend = ggml_backend_get_default_cpu_backend();
+        backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
     }
 #else
-    backend = ggml_backend_get_default_cpu_backend();
+    backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
 #endif
 
     ctx_size += ggml_row_size(GGML_TYPE_F32, sizex * sizey);
@@ -6933,17 +6933,8 @@ static void initialize_tensors(ggml_context * ctx) {
         init_tensor_uniform(t);
     }
 }
+
 /**
-  * this special function is for PoC-S49: implementation of other GGML OP(non-mulmat) using QNN API, https://github.com/zhouwg/kantv/issues/121
-  * it's similar to qnn_ggml but different with qnn_ggml, because data path in these two function is totally different
-  *
-  * the function qnn_ggml calling QNN API directly in JNI layer, the framework in ggml's internal and ggml-qnn.cpp are both not used
-  *
-  * this function will calling QNN backend function in ggml-qnn.cpp via framework in ggml's internal
-  *
-  * this function used to validate PoC-S49:implementation of other GGML OP(non-mulmat) using QNN API
-  * or this function is UT for PoC-S49:implementation of other GGML OP(non-mulmat) using QNN API
-  *
   * @param model_path whisper.cpp model at the first step, llama.cpp model at the second step
   * @param num_threads 1 - 8
   * @param n_backend_type 0: QNN CPU, 1: QNN GPU, 2: QNN DSP(HTA), 3: ggml(fake QNN backend, just used to compare performance between QNN and original GGML)
@@ -6972,12 +6963,10 @@ int qnn_ggml_op(const char *model_path, int num_threads, int n_backend_type, int
 
     GGML_JNI_NOTIFY("starting qnn_ggml_op UT(unit test)\n");
 #if 0 // for performance comparison between QNN backend and original GGML
-    // on Xiaomi14,      4x performance gain for GGML_OP_MUL_MAT with 1 thread
     const int sizey = 4096;
     const int sizex = 4096;
     const int sizez = 128;
-#else // for UT with PoC-S49: implementation of other GGML OP(non-mulmat) using QNN API,https://github.com/zhouwg/kantv/issues/121
-    //troubleshooting issue in previous commit: mulmat's result using QNN CPU backend is not correct in ggml-qnn.cpp
+#else //
     int sizey = 2;
     int sizex = 2;
     int sizez = 1;
@@ -7004,12 +6993,10 @@ int qnn_ggml_op(const char *model_path, int num_threads, int n_backend_type, int
     ggml_backend_t backend = nullptr;
     ggml_backend_buffer_t buffer = nullptr;
 #ifdef GGML_USE_QNN
-    if (n_backend_type != QNN_BACKEND_GGML) {//QNN_BACKEND_GGML is fake QNN backend "ggml", just used to compare performance between QNN backend and original GGML
-        params.use_hwaccel = true;
+    if (n_backend_type != QNN_BACKEND_GGML) {
+        //params.use_hwaccel = true;
         params.no_alloc = true;
-        //PoC-S53: troubleshooting stability issue during toggle between different backend(QNN CPU/GPU/DSP backend, ggml...) in ggml-qnn.cpp(4th milestone)
-        backend = ggml_backend_qnn_init(n_backend_type,
-                                        "/data/data/com.cdeos.kantv/qnnlib/"); // the second param can be got by JNI from Java layer
+        backend = ggml_backend_qnn_init(n_backend_type, "/data/data/com.cdeos.kantv/qnnlib/");
         if (nullptr == backend) {
             LOGGD("create qnn backend %d(%s) failed", n_backend_type,
                   ggml_backend_qnn_get_devname(n_backend_type));
@@ -7018,12 +7005,12 @@ int qnn_ggml_op(const char *model_path, int num_threads, int n_backend_type, int
             return 1;
         }
         //ggml_backend_qnn_set_n_threads(backend, 1);
-        num_threads = 1; // make QNN backend happy because this scenario is in JNI, data path here is totally different with whisper.cpp/llama.cpp
+        num_threads = 1;
     } else {
-        backend = ggml_backend_get_default_cpu_backend();
+        backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
     }
 #else
-    //backend = ggml_backend_get_default_cpu_backend();
+    backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
 #endif
 
     ctx = ggml_init(params);
@@ -7070,10 +7057,7 @@ int qnn_ggml_op(const char *model_path, int num_threads, int n_backend_type, int
     }
     ggml_set_output(dst);
 #ifdef GGML_USE_QNN
-    if (n_backend_type !=
-        QNN_BACKEND_GGML) {//QNN_BACKEND_GGML is fake QNN backend "ggml", just used to compare performance between QNN backend and original GGML
-        LOGGD("creating backend buffer\n");
-        //PoC-S53: troubleshooting stability issue during toggle between different backend(QNN CPU/GPU/DSP backend, ggml...) in ggml-qnn.cpp(4th milestone)
+    if (n_backend_type != QNN_BACKEND_GGML) {
         buffer = ggml_backend_alloc_ctx_tensors(ctx, backend);
         if (!buffer) {
             LOGGD("%s: failed to allocate backend buffer\n", __func__);
@@ -7306,7 +7290,7 @@ int qnn_ggml_op_automation_ut(const char *model_path, int num_threads, int n_bac
             };
 #ifdef GGML_USE_QNN
             if (n_backend_type != QNN_BACKEND_GGML) {//QNN_BACKEND_GGML is fake QNN backend "ggml", just used to compare performance between QNN backend and original GGML
-                gparams.use_hwaccel = true;
+                //gparams.use_hwaccel = true;
                 gparams.no_alloc = true;
             }
 #endif

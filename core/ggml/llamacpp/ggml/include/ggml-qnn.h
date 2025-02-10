@@ -1,19 +1,35 @@
-/*
+ /*
  * Copyright (c) 2024- KanTV Authors
  *
- * this is implementation of "PoC: Add Qualcomm mobile SoC native backend for GGML", https://github.com/zhouwg/kantv/issues/121
+ * this is new implementation of ggml-qnn(ggml backend of Qualcomm Neural Network), https://github.com/zhouwg/kantv/issues/246
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Qualcomm QNN SDK and reference tech guides could be found at:
+ * https://www.qualcomm.com/developer/software/qualcomm-ai-engine-direct-sdk
+ * https://qpm.qualcomm.com/#/main/tools/details/qualcomm_ai_engine_direct
+ * https://developer.qualcomm.com/software/hexagon-dsp-sdk/tools
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+ /*
+ * Copyright (c) 2023-2024 The ggml authors
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
 #pragma once
 
@@ -26,23 +42,15 @@ extern "C" {
 
 
 #define GGML_QNN_MAX_DEVICES    3
+#define GGML_QNN_BACKEND_NAME   "qnn"
 
-//QNN cDSP and HTA backend would not be used currently, just focus on QNN CPU/GPU/NPU(aka HTP/DSP) backend currently
 enum QNNBackend {
     QNN_BACKEND_CPU,
     QNN_BACKEND_GPU,
     QNN_BACKEND_NPU,
-    QNN_BACKEND_GGML, //"fake" QNN backend just for compare performance between QNN and original GGML
+    QNN_BACKEND_GGML, //"fake" QNN backend for compare performance between QNN backend and cpu backend
 };
 
-GGML_BACKEND_API int            ggml_backend_qnn_reg_devices(void);
-
-/**
- *
- * @param device            0: QNN_BACKEND_CPU 1: QNN_BACKEND_GPU 2: QNN_BACKEND_NPU(aka HTP/DSP)
- * @param qnn_lib_path      qnn library path, such as "/data/local/tmp/" on Android or specified in JNI layer
- * @return
- */
 GGML_BACKEND_API ggml_backend_t ggml_backend_qnn_init(size_t dev_num, const char * qnn_lib_path);
 
 GGML_BACKEND_API bool           ggml_backend_is_qnn(ggml_backend_t backend);
@@ -51,17 +59,20 @@ GGML_BACKEND_API void           ggml_backend_qnn_set_n_threads(ggml_backend_t ba
 
 GGML_BACKEND_API int            ggml_backend_qnn_get_device_count(void);
 
-GGML_BACKEND_API void           ggml_backend_qnn_get_device_description(size_t dev_num, char * description, size_t description_size);
-
-GGML_BACKEND_API ggml_backend_buffer_type_t ggml_backend_qnn_buffer_type(size_t dev_num);
+GGML_BACKEND_API ggml_backend_reg_t ggml_backend_qnn_reg(void);
 
 inline const char * ggml_backend_qnn_get_devname(size_t dev_num) {
     switch (dev_num) {
-        case QNN_BACKEND_CPU: return "QNN_CPU";
-        case QNN_BACKEND_GPU: return "QNN_GPU";
-        case QNN_BACKEND_NPU: return "QNN_NPU";
-        case QNN_BACKEND_GGML:return "ggml";
-        default:              return "unknown";
+        case QNN_BACKEND_CPU:
+            return "QNN-CPU";
+        case QNN_BACKEND_GPU:
+            return "QNN-GPU";
+        case QNN_BACKEND_NPU:
+            return "QNN-NPU";
+        case QNN_BACKEND_GGML:
+            return "ggml"; //"fake" QNN backend, used for compare performance between QNN backend and original GGML
+        default:
+            return "unknown";
     }
 }
 

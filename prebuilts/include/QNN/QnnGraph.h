@@ -1,7 +1,7 @@
 //==============================================================================
 //
-// Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
-// All Rights Reserved.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// All rights reserved.
 // Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //==============================================================================
@@ -95,6 +95,8 @@ typedef enum {
   QNN_GRAPH_ERROR_TENSOR_SPARSITY = QNN_MIN_ERROR_GRAPH + 37,
   /// Early termination error
   QNN_GRAPH_ERROR_EARLY_TERMINATION = QNN_MIN_ERROR_GRAPH + 38,
+  /// Invalid context error
+  QNN_GRAPH_ERROR_INVALID_CONTEXT = QNN_MIN_ERROR_GRAPH + 39,
 
   ////////////////////////////////////////
   QNN_GRAPH_MAX_ERROR = QNN_MAX_ERROR_GRAPH,
@@ -374,6 +376,8 @@ Qnn_ErrorHandle_t QnnGraph_createSubgraph(Qnn_GraphHandle_t graphHandle,
  *         - QNN_GRAPH_ERROR_UNSUPPORTED_FEATURE: at least one valid config option is not supported
  *         - QNN_GRAPH_ERROR_PROFILE_IN_USE: when a profile handle is passed as graph config, that
  *           profile handle can only be bound to one graph at a time
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
@@ -502,6 +506,8 @@ Qnn_ErrorHandle_t QnnGraph_addNode(Qnn_GraphHandle_t graphHandle, Qnn_OpConfig_t
  *         - QNN_GRAPH_ERROR_TIMED_OUT: the call is aborted before completion due to a timeout
  *         - QNN_GRAPH_ERROR_FINALIZE_FAILED: finalize failed for some other reason
  *         - QNN_GRAPH_ERROR_SUBGRAPH: operation not permitted on a subgraph
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
@@ -625,11 +631,22 @@ Qnn_ErrorHandle_t QnnGraph_prepareExecutionEnvironment(Qnn_GraphHandle_t graphHa
  *         conversions.
  *       - Some backends may be able to execute a graph with no _inputs_ provided the graph has no
  *         application-writable tensors.
- *       - Graph I/O Tensors marked optional (i.e. omitted or marked as type=QNN_TENSOR_TYPE_NULL
- *         during QnnGraph_addNode()) cannot be supplied to
- *         QnnGraph_execute()/QnnGraph_executeAsync(). Clients mark tensors to be of type
- *         QNN_TENSOR_TYPE_NULL to indicate that they must be ignored when constructing a node that
- *         lists them as optional.
+ *       - QnnGraph_execute() can only accept tensors of type QNN_TENSOR_TYPE_APP_READ,
+ *         QNN_TENSOR_TYPE_APP_WRITE, QNN_TENSOR_TYPE_APP_READ_WRITE,
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_READ, QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE, and
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_READWRITE. Tensors provided with a different type will
+ *         result in QnnGraph_execute() failure.
+ *       - Clients may exclude tensors of type QNN_TENSOR_TYPE_OPTIONAL_APP_READ,
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE, and QNN_TENSOR_TYPE_OPTIONAL_APP_READ from the
+ *         _inputs_ and _outputs_ arguments. If a QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE tensor is
+ *         excluded from the _inputs_ argument, the value of that tensor will be dictated by the
+ *         backend defined behavior for that model. QNN_TENSOR_TYPE_OPTIONAL_APP_READ tensors may be
+ *         excluded from the _outputs_ argument. In this case a backend will not populate the tensor
+ *         on the QnnGraph_execute() call, and the data of these tensors is null. This is an
+ *         optional feature. Backends broadcast support for this feature with
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_WRITE,
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_READ, and
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_READWRITE.
  *       - Mixing different tensor versions in the same graph (e.g. Qnn_TensorV1_t and
  *         Qnn_TensorV2_t) may result in performance degradation.
  *
@@ -668,10 +685,13 @@ Qnn_ErrorHandle_t QnnGraph_prepareExecutionEnvironment(Qnn_GraphHandle_t graphHa
  *           For example, the maximum number of specified elements was exceeded.
  *         - QNN_GRAPH_ERROR_EARLY_TERMINATION: Graph execution terminated early due to defined op
  *           behavior.
+ *         - QNN_GRAPH_ERROR_INVALID_CONTEXT: Graph execution failed due to context already being
+ *           freed.
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */
-
 QNN_API
 Qnn_ErrorHandle_t QnnGraph_execute(Qnn_GraphHandle_t graphHandle,
                                    const Qnn_Tensor_t* inputs,
@@ -751,11 +771,22 @@ Qnn_ErrorHandle_t QnnGraph_execute(Qnn_GraphHandle_t graphHandle,
  *         conversions.
  *       - Some backends may be able to execute a graph with no _inputs_ provided the graph has no
  *         application-writable tensors.
- *       - Graph I/O Tensors marked optional (i.e. omitted or marked as type=QNN_TENSOR_TYPE_NULL
- *         during QnnGraph_addNode()) cannot be supplied to
- *         QnnGraph_execute()/QnnGraph_executeAsync(). Clients mark tensors to be of type
- *         QNN_TENSOR_TYPE_NULL to indicate that they must be ignored when constructing a node that
- *         lists them as optional.
+ *       - QnnGraph_executeAsync() can only accept tensors of type QNN_TENSOR_TYPE_APP_READ,
+ *         QNN_TENSOR_TYPE_APP_WRITE, QNN_TENSOR_TYPE_APP_READ_WRITE,
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_READ, QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE, and
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_READWRITE. Tensors provided with a different type will
+ *         result in QnnGraph_execute() failure.
+ *       - Clients may exclude tensors of type QNN_TENSOR_TYPE_OPTIONAL_APP_READ,
+ *         QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE, and QNN_TENSOR_TYPE_OPTIONAL_APP_READ from the
+ *         _inputs_ and _outputs_ arguments. If a QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE tensor is
+ *         excluded from the _inputs_ argument, the value of that tensor will be dictated by the
+ *         backend defined behavior for that model. QNN_TENSOR_TYPE_OPTIONAL_APP_READ tensors may be
+ *         excluded from the _outputs_ argument. In this case a backend will not populate the tensor
+ *         on the QnnGraph_execute() call, and the data of these tensors is null. This is an
+ *         optional feature. Backends broadcast support for this feature with
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_WRITE,
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_READ, and
+ *         QNN_PROPERTY_TENSOR_SUPPORT_OPTIONAL_APP_READWRITE.
  *       - Mixing different tensor versions in the same graph (e.g. Qnn_TensorV1_t and
  *         Qnn_TensorV2_t) may result in performance degradation.
  *
@@ -791,6 +822,10 @@ Qnn_ErrorHandle_t QnnGraph_execute(Qnn_GraphHandle_t graphHandle,
  *           For example, the maximum number of specified elements was exceeded.
  *         - QNN_GRAPH_ERROR_EARLY_TERMINATION: Graph execution terminated early due to defined op
  *           behavior.
+ *         - QNN_GRAPH_ERROR_INVALID_CONTEXT: Graph execution failed due to context already being
+ *           freed.
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  *
  * @note Use corresponding API through QnnInterface_t.
  */

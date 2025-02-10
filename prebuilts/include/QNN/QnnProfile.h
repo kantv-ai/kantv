@@ -1,6 +1,6 @@
 //==============================================================================
 //
-// Copyright (c) 2019-2023 Qualcomm Technologies, Inc.
+// Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
 // All Rights Reserved.
 // Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -206,6 +206,12 @@ extern "C" {
  *        an opaque object
  */
 #define QNN_PROFILE_EVENTUNIT_OBJECT 5
+
+/**
+ * @brief QnnProfile_EventUnit_t definition to provide profiling measurement with
+ *        no unit
+ */
+#define QNN_PROFILE_EVENTUNIT_NONE 6
 
 /**
  * @brief QnnProfile_EventUnit_t definition reserved for each back end to define

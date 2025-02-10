@@ -3917,8 +3917,6 @@
      }
 
 
-     //keep sync with ggml-qnn.cpp
-     //QNN cDSP and HTA backend would not be used currently, just focus on QNN CPU/GPU/HTP(aka DSP) backend currently
      public static String getGGMLBackendDesc(int n_backend_type) {
          switch (n_backend_type) {
              case 0:
@@ -3926,16 +3924,9 @@
              case 1:
                  return "QNN-GPU";
              case 2:
-                 return "QNN-HTP(DSP)";
+                 return "QNN-NPU";
              case 3:
                  return "ggml";      //fake QNN backend, just used to compare performance between QNN and original GGML
-
-/*           not used currently
-             case 3:
-                 return "QNN-cDSP";
-             case 4:
-                 return "QNN-HTA";
-*/
 
              default:
                  return "unknown";
@@ -4054,7 +4045,7 @@
      //keep sync with ggml-qnn.h
      public static final int QNN_BACKEND_CPU           = 0;
      public static final int QNN_BACKEND_GPU           = 1;
-     public static final int QNN_BACKEND_NPU           = 2; //aka HTP/DSP
+     public static final int QNN_BACKEND_NPU           = 2;
      public static final int QNN_BACKEND_GGML          = 3; //"fake" QNN backend, just for compare performance between QNN and original GGML
 
 

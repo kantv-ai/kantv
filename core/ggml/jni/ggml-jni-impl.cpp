@@ -631,21 +631,19 @@ static const char * ggml_jni_transcribe_from_file(const char * sz_model_path, co
             goto failure;
         }
     } else {
-        //PoC-S53: fix stability issue during toggle between different backend(QNN CPU/GPU/DSP backend, ggml...) in ggml-qnn.cpp(4th milestone)
         whisper_free(p_asr_ctx->p_context);
         struct whisper_context_params wcp = whisper_context_default_params();
         LOGGD("backend %d", n_backend_type);
-        wcp.gpu_device  = n_backend_type;//added on 04-17-2024, for PoC:Add Qualcomm mobile SoC native backend for GGML, https://github.com/zhouwg/kantv/issues/121
+        wcp.gpu_device  = n_backend_type;
         wcp.use_gpu     = false;
 #ifdef GGML_USE_QNN
-        if (n_backend_type != QNN_BACKEND_GGML) { // QNN_BACKEND_GGML is a fake QNN backend, just used to compare performance between QNN backend and original GGML
+        if (n_backend_type != QNN_BACKEND_GGML) {
             wcp.use_gpu = true;
         } else {
             wcp.use_gpu = false;
         }
 #endif
         context = whisper_init_from_file_with_params(sz_model_path, wcp);
-        //PoC-S53: fix stability issue during toggle between different backend(QNN CPU/GPU/DSP backend, ggml...) in ggml-qnn.cpp(4th milestone)
         p_asr_ctx->p_context = context;
         if (nullptr == context) {
             LOGGW("whisper_init_from_file_with_params failure, pls check why\n");
@@ -718,7 +716,6 @@ failure:
 
     if (nullptr != context) {
         whisper_free(context);
-        //PoC-S53: fix stability issue during toggle between different backend(QNN CPU/GPU/DSP backend, ggml...) in ggml-qnn.cpp(4th milestone)
         p_asr_ctx->p_context = nullptr;
     }
 
@@ -801,7 +798,7 @@ int ggml_jni_get_cpu_core_counts() {
   *
   * @param sz_model_path   /sdcard/kantv/models/file_name_of_gguf_model or qualcomm's prebuilt dedicated model.so or ""
   * @param sz_user_data    ASR: /sdcard/kantv/jfk.wav / LLM: user input / TEXT2IMAGE: user input / MNIST: image path / TTS: user input
-  * @param n_bench_type    0: memcpy 1: mulmat 2: QNN GGML OP(QNN UT) 3: QNN UT automation 4: ASR(whisper.cpp) 5: LLM(llama.cpp) 6: TEXT2IMAGE(stablediffusion.cpp) 7:MNIST 8: TTS
+  * @param n_bench_type    0: memcpy 1: mulmat 2: QNN GGML OP(QNN UT) 3: QNN UT automation 4: ASR(whisper.cpp) 5: LLM(llama.cpp)
   * @param n_threads       1 - 8
   * @param n_backend_type  0: CPU  1: GPU  2: NPU 3: ggml("fake" QNN backend, just for compare performance)
   * @param n_op_type       type of GGML OP
@@ -856,11 +853,11 @@ void ggml_jni_bench(const char * sz_model_path, const char * sz_user_data, int n
             ggml_jni_bench_mulmat(n_threads, n_backend_type);
             break;
 
-        case GGML_BENCHMARK_QNN_GGML_OP: //UT for PoC-S49: implementation of GGML OPs using QNN API
+        case GGML_BENCHMARK_QNN_GGML_OP:
             qnn_ggml_op(sz_model_path, n_threads, n_backend_type, n_op_type);
             break;
 
-        case GGML_BENCHMARK_QNN_AUTO_UT: //automation UT for PoC-S49: implementation of GGML OPs using QNN API
+        case GGML_BENCHMARK_QNN_AUTO_UT:
             qnn_ggml_op_automation_ut(sz_model_path, n_threads, n_backend_type, n_op_type);
             break;
 
@@ -1415,23 +1412,14 @@ int whisper_asr_init(const char * sz_model_path, int n_threads, int n_asrmode, i
      struct whisper_full_params params;
      struct whisper_context_params c_params = whisper_context_default_params();
 
+     //FIXME:hardcoded binary ggml backend path
+     char * backend_lib_path = "/data/data/com.cdeos.kantv/qnnlib";
+     ggml_backend_load_all_from_path(backend_lib_path);
+
      if ((NULL == sz_model_path) || (n_asrmode > 3)) {
          LOGGW("invalid param\n");
          return 1;
      }
-
-
-     //dynamic ISA dectect by RUAPU, prepare for SIMD optimization on Android device. but not used currently
-     //not used since v1.3.8 because Tencent's NCNN inference framework was used in this project and ruapu.h already exist in libncnn.a
-#if 0
-     ruapu_init();
-     const char* const* supported = ruapu_rua();
-     while (*supported) {
-         LOGGD("%s\n", *supported);
-         supported++;
-     }
-#endif
-
      LOGGV("model path:%s\n", sz_model_path);
      LOGGV("thread counts:%d\n", n_threads);
      LOGGV("asr mode:%d\n", n_asrmode);

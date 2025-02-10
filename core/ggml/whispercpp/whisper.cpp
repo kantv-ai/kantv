@@ -1281,7 +1281,11 @@ static std::vector<ggml_backend_t> whisper_backend_init(const whisper_context_pa
         ggml_backend_dev_t dev = ggml_backend_dev_get(i);
         if (ggml_backend_dev_type(dev) == GGML_BACKEND_DEVICE_TYPE_ACCEL) {
             WHISPER_LOG_INFO("%s: using %s backend\n", __func__, ggml_backend_dev_name(dev));
+#ifndef GGML_USE_QNN
             ggml_backend_t backend = ggml_backend_dev_init(dev, nullptr);
+#else
+            ggml_backend_t backend = ggml_backend_dev_init(dev,reinterpret_cast<const char *>(params.gpu_device));
+#endif
             if (!backend) {
                 WHISPER_LOG_ERROR("%s: failed to initialize %s backend\n", __func__, ggml_backend_dev_name(dev));
                 continue;

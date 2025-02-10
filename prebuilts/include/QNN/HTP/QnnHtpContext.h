@@ -1,10 +1,10 @@
-//=============================================================================
+//==============================================================================
 //
-//  Copyright (c) 2023 Qualcomm Technologies, Inc.
-//  All Rights Reserved.
-//  Confidential and Proprietary - Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All rights reserved.
+//  Confidential and Proprietary - Qualcomm Technologies, Inc.s
 //
-//=============================================================================
+//==============================================================================
 
 /**
  *  @file
@@ -36,10 +36,14 @@ extern "C" {
  *        options associated with QnnContext
  */
 typedef enum {
-  QNN_HTP_CONTEXT_CONFIG_OPTION_WEIGHT_SHARING_ENABLED  = 1,
-  QNN_HTP_CONTEXT_CONFIG_OPTION_REGISTER_MULTI_CONTEXTS = 2,
-  QNN_HTP_CONTEXT_CONFIG_OPTION_FILE_READ_MEMORY_BUDGET = 3,
-  QNN_HTP_CONTEXT_CONFIG_OPTION_UNKNOWN                 = 0x7fffffff
+  QNN_HTP_CONTEXT_CONFIG_OPTION_WEIGHT_SHARING_ENABLED       = 1,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_REGISTER_MULTI_CONTEXTS      = 2,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_FILE_READ_MEMORY_BUDGET      = 3,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_DSP_MEMORY_PROFILING_ENABLED = 4,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_SHARE_RESOURCES              = 5,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_IO_MEM_ESTIMATION            = 6,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_PREPARE_ONLY                 = 7,
+  QNN_HTP_CONTEXT_CONFIG_OPTION_UNKNOWN                      = 0x7fffffff
 } QnnHtpContext_ConfigOption_t;
 
 typedef struct {
@@ -81,6 +85,14 @@ typedef struct {
  *               | 2  | QNN_HTP_CONTEXT_CONFIG_OPTION_REGISTER_MULTI_CONTEXTS               | QnnHtpContext_GroupRegistration_t     |
  *               +====+=====================================================================+=======================================+
  *               | 3  | QNN_HTP_CONTEXT_CONFIG_OPTION_FILE_READ_MEMORY_BUDGET               | uint64_t                              |
+ *               +====+=====================================================================+=======================================+
+ *               | 4  | QNN_HTP_CONTEXT_CONFIG_OPTION_DSP_MEMORY_PROFILING_ENABLED          | bool                                  |
+ *               +====+=====================================================================+=======================================+
+ *               | 5  | QNN_HTP_CONTEXT_CONFIG_OPTION_SHARE_RESOURCES                       | bool                                  |
+ *               +----+---------------------------------------------------------------------+---------------------------------------+
+ *               | 6  | QNN_HTP_CONTEXT_CONFIG_OPTION_IO_MEM_ESTIMATION                     | bool                                  |
+ *               +----+---------------------------------------------------------------------+---------------------------------------+
+ *               | 7  | QNN_HTP_CONTEXT_CONFIG_OPTION_PREPARE_ONLY                          | bool                                  |
  *               +----+---------------------------------------------------------------------+---------------------------------------+
  *               \endverbatim
  */
@@ -96,13 +108,31 @@ typedef struct QnnHtpContext_CustomConfig {
     //    - If set to greater than file size, min(fileSize, fileReadMemoryBudgetInMb) is used
     // - As an example, if value 2 is passed, it would translate to (2 * 1024 * 1024) bytes
     uint64_t fileReadMemoryBudgetInMb;
+    bool dspMemoryProfilingEnabled;
+    // This field enables resource sharing across different contexts, enhancing RAM and virtual
+    // address(VA) space utialization. When this flag is activated, graphs are expected to execute
+    // sequentially. Note that this configuration option is only supported when using the
+    // QnnContext_createFromBinaryListAsync API.
+    bool shareResources;
+    // This field enables I/O memory estimation during QnnContext_createFromBinary API when multiple
+    // PDs are available. When enabled, it estimates the total size of the I/O tensors required by
+    // the context to ensure sufficient space on the PD before deserialization. This feature helps
+    // with memory registration failures in large models.
+    // Note that enabling this feature increases peak RAM usage during context initialization phase
+    // in QnnContext_createFromBinary, but sustained RAM remains unaffected.
+    bool ioMemEstimation;
+    // This field enables model preparation without mapping its content on the DSP side. It is
+    // useful when a model needs to be prepared on the device but executed through a serialized
+    // binary method. This prevents extra mapping onto the DSP VA space. Set this flag only when
+    // creating the context.
+    bool isPrepareOnly;
   };
 } QnnHtpContext_CustomConfig_t;
 
 /// QnnHtpContext_CustomConfig_t initializer macro
 #define QNN_HTP_CONTEXT_CUSTOM_CONFIG_INIT            \
   {                                                   \
-    QNN_HTP_CONTEXT_CONFIG_OPTION_UNKNOWN  /*option*/ \
+    QNN_HTP_CONTEXT_CONFIG_OPTION_UNKNOWN, /*option*/ \
     {                                                 \
       false                          /*weightsharing*/\
     }                                                 \

@@ -1,7 +1,7 @@
 //==============================================================================
 //
-// Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
-// All Rights Reserved.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// All rights reserved.
 // Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //==============================================================================
@@ -32,13 +32,83 @@ extern "C" {
 //=============================================================================
 // Data Types
 //=============================================================================
+/**
+ * @brief A structure which defines Op Mapping information from Source Framework Operation
+ *        to QNN Operation.
+ */
+typedef enum {
+  QNN_OP_MAPPING_TYPE_TENSOR = 0,
+  QNN_OP_MAPPING_TYPE_OP = 1
+} Qnn_MappingType_t;
+
+typedef struct {
+  const char* name;
+  Qnn_MappingType_t type;
+} Qnn_OpMappingPair_t;
+
+typedef struct {
+  /// Name of the QNN Operation or Tensor
+  const char* name;
+  /// Associated pairs to this tensor or operation.
+  Qnn_OpMappingPair_t* pair;
+  /// Number of pairs
+  uint32_t numPairs;
+} Qnn_Mapping_t;
+
+typedef struct {
+  const char* graphName;
+  Qnn_Mapping_t* opMappings;
+  uint32_t numOpMappings;
+  Qnn_Mapping_t* tensorMappings;
+  uint32_t numTensorMappings;
+} Qnn_OpMappingV1_t;
+
+/// Version for Qnn_OpMapping_t
+typedef enum {
+  QNN_OP_MAPPING_VERSION_1 = 1,
+} Qnn_OpMappingVersion_t;
+
+typedef struct {
+  Qnn_OpMappingVersion_t version;
+  union UNNAMED {
+    Qnn_OpMappingV1_t* v1;
+  };
+} Qnn_OpMapping_t;
+
+// clang-format off
+/// Qnn_OpMapping_t initializer macro
+#define QNN_OP_MAPPING_INIT        \
+  {                                \
+    QNN_OP_MAPPING_VERSION_1,      \
+    {                              \
+      NULL                         \
+    }                              \
+  }
+// clang-format on
+
+// clang-format off
+/// Qnn_OpMappingV1_t initializer macro
+#define QNN_OP_MAPPING_V1_INIT     \
+  {                                \
+      NULL, /*graphName*/          \
+      NULL, /*opMappings*/         \
+      0,    /*numOpMappings*/      \
+      NULL, /*tensorMappings*/     \
+      0,    /*numTensorMappings*/  \
+  }
+// clang-format on
 
 /**
  * @brief An enum which defines various data types.
- *        FIXED_XX types are targeted for data in tensors.
- *        UINT / INT types are targeted for scalar params.
- *        4-bit types are tightly packed into one byte in
- *        little endian format.
+ *
+ * @note  4-bit data types (QNN_DATATYPE_SFIXED_POINT_4 and
+ *        QNN_DATATYPE_UFIXED_POINT_4) are stored in tightly
+ *        packed format into a single byte in little endian
+ *        format. This allows two 4-bit quantized elements to be
+ *        stored in a single byte. The lower nibble stores the first
+ *        value while the higher nibble stores the second value.
+ *        For example, to represent two 4-bit quantized values of
+ *        10 and 4, they will be stored in a single byte as (0100 1010).
  */
 typedef enum {
   // Signed Int: 0x00XX
@@ -126,6 +196,30 @@ typedef enum {
   /// Tensor type NULL which can be used to represent optional tensors. Other Qnn_Tensor_t metadata
   /// is ignored.
   QNN_TENSOR_TYPE_NULL = 5,
+  /// Tensor containing static data whose content or quantization encodings may
+  /// be modified by a client after tensor creation.
+  QNN_TENSOR_TYPE_UPDATEABLE_STATIC = 6,
+  /// Tensor native to a graph whose quantization encodings may be modified by a
+  /// client after tensor creation.
+  QNN_TENSOR_TYPE_UPDATEABLE_NATIVE = 7,
+  /// Application writable tensor whose quantization encodings may be modified by a
+  /// client after tensor creation.
+  QNN_TENSOR_TYPE_UPDATEABLE_APP_WRITE = 8,
+  /// Application readable tensor whose quantization encodings may be modified by a
+  /// client after tensor creation.
+  QNN_TENSOR_TYPE_UPDATEABLE_APP_READ = 9,
+  /// Application readable/writable tensor whose quantization encodings may be modified by a
+  /// client after tensor creation.
+  QNN_TENSOR_TYPE_UPDATEABLE_APP_READWRITE = 10,
+  /// Tensor type OPTIONAL_APP_WRITE represents an application writable (input) tensor that may be
+  /// excluded from inferences
+  QNN_TENSOR_TYPE_OPTIONAL_APP_WRITE = 11,
+  /// Tensor type OPTIONAL_APP_READ represents an application readable (output) tensor that may be
+  /// excluded from inferences.
+  QNN_TENSOR_TYPE_OPTIONAL_APP_READ = 12,
+  /// Tensor type OPTIONAL_APP_READ_WRITE represents an application readable (output) or writable
+  /// (input) tensor that may be excluded from inferences.
+  QNN_TENSOR_TYPE_OPTIONAL_APP_READWRITE = 13,
   // Unused, present to ensure 32 bits.
   QNN_TENSOR_TYPE_UNDEFINED = 0x7FFFFFFF
 } Qnn_TensorType_t;
@@ -285,20 +379,34 @@ typedef struct {
  *
  */
 typedef enum {
-  /// Indicates Qnn_ScaleOffset_t encoding type
+  /// Indicates per-tensor scale-offset encoding type. See Qnn_ScaleOffset_t. Support can be checked
+  /// via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_SCALE_OFFSET.
   QNN_QUANTIZATION_ENCODING_SCALE_OFFSET = 0,
-  /// Indicates Qnn_AxisScaleOffset_t encoding type
+  /// Indicates per-axis (e.g. per-channel) scale-offset encoding type. See Qnn_AxisScaleOffset_t.
+  /// Support can be checked via
+  /// QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_AXIS_SCALE_OFFSET.
   QNN_QUANTIZATION_ENCODING_AXIS_SCALE_OFFSET = 1,
-  /// Indicates Qnn_BwScaleOffset_t encoding type
+  /// Indicates bit-width scale-offset encoding type. See Qnn_BwScaleOffset_t. Support can be
+  /// checked via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_BW_SCALE_OFFSET.
   QNN_QUANTIZATION_ENCODING_BW_SCALE_OFFSET = 2,
-  /// Indicates Qnn_BwAxisScaleOffset_t encoding type
+  /// Indicates bit-width per-axis scale-offset encoding type. See Qnn_BwAxisScaleOffset_t. Support
+  /// can be checked via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_BW_AXIS_SCALE_OFFSET.
   QNN_QUANTIZATION_ENCODING_BW_AXIS_SCALE_OFFSET = 3,
+  /// Indicates per-block scale-offset encoding type. See Qnn_BlockScaleOffset_t. Support can be
+  /// checked via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_BLOCK_SCALE_OFFSET.
+  QNN_QUANTIZATION_ENCODING_BLOCK = 4,
+  /// Indicates per-block scale-offset encoding type. See Qnn_BlockScaleOffset_t. Support can be
+  /// checked via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_BLOCKWISE_EXPANSION.
+  QNN_QUANTIZATION_ENCODING_BLOCKWISE_EXPANSION = 5,
+  /// Indicates VQ compression encoding type. See Qnn_VectorQuantCompression_t. Support can be
+  /// checked via QNN_PROPERTY_TENSOR_SUPPORT_QUANTIZATION_ENCODING_VQ_COMPRESSION.
+  QNN_QUANTIZATION_ENCODING_VECTOR = 6,
   // Unused, present to ensure 32 bits.
   QNN_QUANTIZATION_ENCODING_UNDEFINED = 0x7FFFFFFF
 } Qnn_QuantizationEncoding_t;
 
 /**
- * @brief A struct to express quantization parameters as a positive scale with a zero offset.
+ * @brief A struct to express scale-offset quantization encoding.
  *
  * float_value = (quantized_value + offset) * scale
  */
@@ -434,6 +542,127 @@ typedef struct {
 // clang-format on
 
 /**
+ * @brief A struct to express block quantization parameters. A tensor is divided into blocks of
+ * size blockSize, where blockSize is an array of length rank.
+ *
+ * @note num of scaleOffsets (i.e. num of blocks) must be ==
+ * ceil(dimensions[0]/blockSize[0])*ceil(dimensions[1]/blockSize[1]) ...
+ * .... *ceil(dimensions[rank-1] / blockSize[rank-1]). *
+ */
+typedef struct {
+  /// Dimensions of the block in number of tensor elements.
+  /// Pointer to an array of size RANK(Weight). Each element specifies the size along the
+  /// corresponding dimension
+  uint32_t* blockSize;
+
+  /// Array of size numBlocks of scale offset pairs.
+  Qnn_ScaleOffset_t* scaleOffset;
+} Qnn_BlockEncoding_t;
+
+// clang-format off
+/// Qnn_BlockEncoding_t initializer macro
+#define QNN_BLOCK_ENCODING_INIT     \
+  {                                 \
+    0u,      /*blockSize*/          \
+    NULL     /*scaleOffset*/        \
+  }                                 \
+// clang-format on
+
+/**
+ * @brief An enum to specify blockwise expansion block scale storage widths
+ *
+ */
+typedef enum {
+    QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_8 = 0,
+    QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_16 = 1,
+    // Unused, present to ensure 32 bits.
+    QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_UNDEFINED = 0x7FFFFFFF
+} Qnn_BlockwiseExpansionBlockScaleStorageType_t;
+
+/**
+ * @brief A struct to express block-wise expansion quantization parameters.
+ *
+ * @note This quantization encoding must not be used with dynamically shaped tensors.
+ *
+ */
+typedef struct {
+    /// The dimension (typically the channel dimension)
+    int32_t axis;
+    /// Array of size axisSize of scale offset pairs.
+    Qnn_ScaleOffset_t* scaleOffsets;
+    /// Number of blocks within the axis.
+    uint32_t numBlocksPerAxis;
+    /// Block bitwidth (e.g. 12 bits for 4 to 16 expansion)
+    uint32_t blockScaleBitwidth;
+    /// Size of the block scaling storage, must be able to store at least blockScaleBitwidth sized values.
+    Qnn_BlockwiseExpansionBlockScaleStorageType_t blockScaleStorageType;
+    union UNNAMED {
+        /// A contiguous array of block scalings of size axisSize*numBlocksPerAxis. The array is laid out such that an element can be accessed via blocksScale8[axisIter*numBlocksPerAxis+blockIter].
+        /// Used when blockStorageSize is QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_8.
+        uint8_t* blocksScale8;
+        /// A contiguous array of block scalings of size axisSize*numBlocksPerAxis. The array is laid out such that an element can be accessed via blocksScale16[axisIter*numBlocksPerAxis+blockIter].
+        /// Used when blockStorageSize is QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_16.
+        uint16_t* blocksScale16;
+    };
+} Qnn_BlockwiseExpansion_t;
+
+// clang-format off
+/// Qnn_BlockScaleOffset_t initializer macro
+#define QNN_BLOCKWISE_EXPANSION_INIT                                              \
+  {                                                                               \
+    0,                                                  /*axis*/                  \
+    NULL,                                               /*scaleOffsets*/          \
+    0u,                                                 /*numBlocksPerAxis*/      \
+    0u,                                                 /*blockScaleBitwidth*/    \
+    QNN_BLOCKWISE_EXPANSION_BITWIDTH_SCALE_STORAGE_UNDEFINED, /*blockScaleStorageType*/ \
+    {                                                                             \
+      NULL,                                             /*blocksScale8*/          \
+    }                                                                             \
+  }                                                                               \
+// clang-format on
+
+/**
+ * @brief A struct to express vector quantization parameters.
+ *
+ * @note This quantization encoding is a specific case of per-channel quantization where
+ * the weights and parameters are crafted in such a way to allow for compression and
+ * codebook generation. For each group of rowsPerBlock*columnsPerBlock weights, there
+ * will be 2^indexBitwidth unique vectorDimension-tuples of weights.
+ *
+ * @note This quantization encoding must not be used with dynamically shaped tensors.
+ *
+ */
+typedef struct {
+    /// Vector Quantization can be thought of as per-channel quantization with specifically
+    /// crafted weights and encoding parameters that allow for codebook generation
+    /// Each weight within the codebook is bwAxisScaleOffset.bitwidth bits wide
+    Qnn_BwAxisScaleOffset_t bwAxisScaleOffset;
+    /// Number of rows in the block of decoded weight coordinates
+    uint32_t rowsPerBlock;
+    /// Number of colums inf the block of decoded weight coordinates
+    uint32_t columnsPerBlock;
+    /// The dimension of the vector encoding. e.g 1D,2D,3D... for 1, 2 or 3 weights per index, respectively
+    uint8_t vectorDimension;
+    /// A value describing how the weights from a given lookup will be unpacked
+    uint8_t vectorStride;
+    /// The bitwidth of the each index into the codebook
+    uint8_t indexBitwidth;
+} Qnn_VectorEncoding_t;
+
+// clang-format off
+/// Qnn_VectorEncoding_t initializer macro
+#define QNN_VECTOR_ENCODING_INIT                                                  \
+  {                                                                               \
+    QNN_BW_AXIS_SCALE_OFFSET_INIT,                        /*bwAxisScaleOffset*/   \
+    0u,                                                   /*rowsPerBlock*/        \
+    0u,                                                   /*columnsPerBlock*/     \
+    0u,                                                   /*vectorDimension*/     \
+    0u,                                                   /*vectorStride*/        \
+    0u,                                                   /*indexBitwidth*/       \
+  }                                                                               \
+// clang-format on
+
+/**
  * @brief A struct which defines the quantization parameters, and union of supported quantization
  * encoding structs.
  */
@@ -442,10 +671,20 @@ typedef struct {
   /// Quantization encoding type identifying quantization encoding structure to use
   Qnn_QuantizationEncoding_t quantizationEncoding;
   union UNNAMED {
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_SCALE_OFFSET. Note that this field is a value.
     Qnn_ScaleOffset_t scaleOffsetEncoding;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_AXIS_SCALE_OFFSET. Note that this field is a value.
     Qnn_AxisScaleOffset_t axisScaleOffsetEncoding;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_BW_SCALE_OFFSET. Note that this field is a value.
     Qnn_BwScaleOffset_t bwScaleOffsetEncoding;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_BW_AXIS_SCALE_OFFSET. Note that this field is a value.
     Qnn_BwAxisScaleOffset_t bwAxisScaleOffsetEncoding;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_BLOCK. Note that this field is a value.
+    Qnn_BlockEncoding_t blockEncoding;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_BLOCKWISE_EXPANSION. Note that this field is a pointer.
+    Qnn_BlockwiseExpansion_t* blockwiseExpansion;
+    /// Used when quantizationEncoding is QNN_QUANTIZATION_ENCODING_VECTOR. Note that this field is a pointer.
+    Qnn_VectorEncoding_t* vectorEncoding;
   };
 } Qnn_QuantizeParams_t;
 
@@ -474,10 +713,49 @@ typedef struct {
  */
 #define QNN_TENSOR_DATA_FORMAT_SPARSE 1
 
+// TODO: advertise the layout
+/**
+ * @brief A tensor formatted as a codebook. This tensor data format is to be used only in
+ * conjunction with a quantized QNN_TENSOR_TYPE_STATIC tensor using the Qnn_VectorEncoding_t
+ * encoding.
+ */
+#define QNN_TENSOR_DATA_FORMAT_CODEBOOK 2
+
+/**
+ * @brief Tensor data formatted in microscaling (MX) format. Compatible with multiple data types.
+ */
+#define QNN_TENSOR_DATA_FORMAT_MX 3
+
+/**
+* @brief An tensor compressed in memory in UBWC_RGBA8888 format, using the universal
+ *       bandwidth compression (UBWC) scheme.
+*/
+#define QNN_TENSOR_DATA_FORMAT_UBWC_RGBA8888 4
+
+/**
+* @brief An tensor compressed in memory in UBWC_NV12 format, using the universal
+ *       bandwidth compression (UBWC) scheme.
+*/
+#define QNN_TENSOR_DATA_FORMAT_UBWC_NV12 5
+
+/**
+* @brief An tensor compressed in memory in UBWC_NV12 format, using the universal
+ *       bandwidth compression (UBWC) scheme. This data format particularly represents
+ *       the Y plane of the NV12 format
+*/
+#define QNN_TENSOR_DATA_FORMAT_UBWC_NV12_Y 6
+
+/**
+* @brief An tensor compressed in memory in UBWC_NV12 format, using the universal
+ *       bandwidth compression (UBWC) scheme. This data format particularly represents
+ *       the UV plane of the NV12 format
+*/
+#define QNN_TENSOR_DATA_FORMAT_UBWC_NV12_UV 7
+
 /**
  * @brief Tensor data format identifier. The default format
  *        QNN_TENSOR_DATA_FORMAT_DENSE is supported by all backends. Backends may also support
- *        QNN_TENSOR_DATA_FORMAT_SPARSE.
+ *        QNN_TENSOR_DATA_FORMAT_SPARSE or QNN_TENSOR_DATA_FORMAT_CODEBOOK.
  * @note  Data format for intermediate tensors, i.e ones of type QNN_TENSOR_TYPE_NATIVE
  *        may not be honored by a backend, because it can choose to pick a data format that is
  *        more conducive for its execution.
@@ -492,6 +770,8 @@ typedef enum {
   QNN_TENSORMEMTYPE_RAW = 0,
   /// Memory object, provide capability for memory sharing in between QNN accelerator backends.
   QNN_TENSORMEMTYPE_MEMHANDLE = 1,
+  /// Callback to retrieve a raw memory pointer
+  QNN_TENSORMEMTYPE_RETRIEVE_RAW = 2,
   // Unused, present to ensure 32 bits.
   QNN_TENSORMEMTYPE_UNDEFINED = 0x7FFFFFFF
 } Qnn_TensorMemType_t;
@@ -506,6 +786,72 @@ typedef struct {
   /// size of buffer, in bytes, pointed to by data.
   uint32_t dataSize;
 } Qnn_ClientBuffer_t;
+
+/**
+ * @brief A client-defined function used to obtain tensor data when the tensor memory type is
+ *        QNN_TENSORMEMTYPE_RETRIEVE_RAW. Qnn_GetTensorRawDataRn_t may be called multiple times for
+ * the same tensor. Each call to Qnn_GetTensorRawDataRn_t must be accompanied by a call to
+ * Qnn_FreeTensorRawDataFn_t to free any allocated data for that tensor. It is not required that
+ * this function be thread safe, unless needed to support retrieval of tensor resources that may be
+ * shared between threads.
+ *
+ * @param[in] id The tensor ID.
+ * @param[in] context the context to which the tensor is associated
+ * @param[in] graph the graph to which the context is associated. For context tensors this field
+ *            should be null.
+ *
+ * @param[out] clientBuf Pointer to the tensor's client buffer.
+ *
+ * @return Error code:
+ *         - QNN_SUCCESS: Client Buffer data successfully provided.
+ *         - QNN_TENSOR_ERROR_DOES_NOT_EXIST: Tensor with __id__ does not exist or was not created
+ * as QNN_TENSORMEMTYPE_RETRIEVE_RAW.
+ *         - QNN_COMMON_ERROR_INVALID_ARGUMENT: __clientBuf__ is NULL
+ *         - QNN_COMMON_ERROR_RESOURCE_UNAVAILABLE: Requested tensor data cannot be allocated.
+ *
+ */
+typedef Qnn_ErrorHandle_t (*Qnn_GetTensorRawDataFn_t)(Qnn_ContextHandle_t context,
+                                                      Qnn_GraphHandle_t graph,
+                                                      uint64_t id,
+                                                      Qnn_ClientBuffer_t* clientBuf);
+
+/**
+ * @brief A client-defined function used to free tensor data previously obtained by
+ * Qnn_GetTensorDataFn_t. After the call to Qnn_FreeTensorDataFn_t the data provided in the client
+ * buffer clientBuf should be considered invalid. If Qnn_GetTensorRawDataRn_t has been called
+ * multiple times for the same tensor then Qnn_FreeTensorRawDataFn_t must be called an equivalent
+ * number of times to free all allocated data for this tensor. It is not required that this function
+ * be thread safe, unless needed to support releasing of tensor resources that may be shared between
+ * threads.
+ *
+ * @param[in] id The tensor ID.
+ * @param[in] context the context to which the tensor is associated
+ * @param[in] graph the graph to which the context is associated. For context tensors this field
+ * should be null.
+ *
+ * @return Error code:
+ *         - QNN_SUCCESS: Client Buffer data successfully freed.
+ *         - QNN_TENSOR_ERROR_DOES_NOT_EXIST: Tensor with __id__ does not exist, was not created
+ *           as QNN_TENSORMEMTYPE_RETRIEVE_RAW, or has already been free'd.
+ *
+ */
+typedef Qnn_ErrorHandle_t (*Qnn_FreeTensorRawDataFn_t)(Qnn_ContextHandle_t context,
+                                                       Qnn_GraphHandle_t graph,
+                                                       uint64_t id);
+
+typedef struct {
+  Qnn_GetTensorRawDataFn_t getTensorData;
+  Qnn_FreeTensorRawDataFn_t freeTensorData;
+} Qnn_TensorRetrieveRaw_t;
+
+// clang-format off
+/// Qnn_TensorDataRetrieve_t initializer macro
+#define QNN_TENSOR_RETRIEVE_RAW_INIT \
+  {                                  \
+    NULL,   /*getTensorData*/        \
+    NULL    /*freeTensorData*/       \
+  }
+// clang-format on
 
 // clang-format off
 /// Qnn_ClientBuffer_t initializer macro
@@ -673,6 +1019,9 @@ typedef struct {
     Qnn_ClientBuffer_t clientBuf;
     /// Tensor data shared via a memory handle (see QNN_TENSORMEMTYPE_MEMHANDLE).
     Qnn_MemHandle_t memHandle;
+    /// Tensor data provided by client as a raw pointer retrieved through a callback
+    /// (QNN_TENSORMEMTYPE_RETRIEVE_RAW)
+    Qnn_TensorRetrieveRaw_t* retrieveRaw;
   };
   /// A boolean array of length _rank_ indicating if a tensor dimension is dynamic. Must be NULL
   /// when rank is 0. Can be NULL if all dimensions are static. A true (non-zero) value indicates

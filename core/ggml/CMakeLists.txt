@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(TARGET_XIAOMI14    ON)   # set it to ON to get much better performance on Xiaomi 14 or Qualcomm Snapdragon 8 Gen 3 SoC based Android phone
-set(GGML_ENABLE_QNN    OFF)  # set it to ON to enable QNN(Qualcomm Neural Network, aka Qualcomm AI Engine Direct) SDK on Qualcomm SoC based Android phone
+set(TARGET_XIAOMI14    ON)    # set it to ON to get much better performance on Xiaomi 14 or Qualcomm Snapdragon 8 Gen 3 SoC based Android phone
+set(GGML_ENABLE_QNN    ON)   # set it to ON to enable QNN(Qualcomm Neural Network, aka Qualcomm AI Engine Direct) SDK on Qualcomm SoC based Android phone
 
 set(KANTV_MEDIA_SRC_DIR         ${CMAKE_SOURCE_DIR}/media/)
 set(GGML_SRC_DIR                ${CMAKE_SOURCE_DIR}/ggml)
@@ -39,7 +39,6 @@ message("QNN_INC_PATH         : ${QNN_INC_PATH}")
 message("QNN_LIB_PATH         : ${QNN_LIB_PATH}")
 message("CMAKE_BUILD_TYPE     : ${CMAKE_BUILD_TYPE}")
 
-
 include_directories(${LLAMACPP_SRC_DIR}/ggml/include)
 include_directories(${LLAMACPP_SRC_DIR}/include)
 include_directories(${LLAMACPP_SRC_DIR}/ggml/src)
@@ -49,7 +48,7 @@ include_directories(${QNN_INC_PATH}/)
 include_directories(${KANTV_MEDIA_SRC_DIR}/include) # kantv-asr.h
 
 if (GGML_ENABLE_QNN)
-    set(QNN_BACKEND_SRCS ${LLAMACPP_SRC_DIR}/ggml-qnn.cpp)
+    set(QNN_BACKEND_SRCS ${LLAMACPP_SRC_DIR}/ggml/src/ggml-qnn/ggml-qnn.cpp)
 endif()
 
 set(SOURCE_FILES
@@ -68,6 +67,7 @@ set(SOURCE_FILES
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml-cpu/ggml-cpu-hbm.cpp
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml-cpu/ggml-cpu-quants.c
         ${LLAMACPP_SRC_DIR}/ggml/src/ggml-cpu/ggml-cpu-traits.cpp
+        ${QNN_BACKEND_SRCS}
 
         ${LLAMACPP_SRC_DIR}/src/llama.cpp
         ${LLAMACPP_SRC_DIR}/src/llama-adapter.cpp
@@ -121,7 +121,7 @@ add_definitions(-DTARGET_ANDROID)
 add_definitions(-D__ARM_NEON)
 add_definitions(-DGGML_USE_LLAMAFILE)
 
-#2025-01:make the new sw arch of upstream llama.cpp happy on Android port
+#2025-01:make the new sw arch of latest upstream llama.cpp happy on Android port
 #add_definitions(-D__ARM_ARCH) #FIXME:why NDK complains NEON issue in ggml-quants.c
 add_definitions(-D__aarch64__)
 add_definitions(-D__linux__)
@@ -129,8 +129,6 @@ add_definitions(-DGGML_USE_CPU)
 
 if (GGML_ENABLE_QNN)
 add_definitions(-DGGML_USE_QNN)
-else()
-add_definitions(-DGGML_DISABLE_QNN)
 endif()
 
 add_definitions(-O3) #otherwise app's performance will be very bad on Xiaomi14 with debug build
@@ -156,7 +154,6 @@ add_definitions(-mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8)
 
 endif()
 
-#add_compile_options("-Wall" "-Werror" "-Wno-sign-compare")
 add_compile_options("-Wall" "-Wno-sign-compare")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

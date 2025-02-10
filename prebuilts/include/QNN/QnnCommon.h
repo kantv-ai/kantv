@@ -1,8 +1,8 @@
 //==============================================================================
 //
-// Copyright (c) 2019-2024 Qualcomm Technologies, Inc.
-// All Rights Reserved.
-// Confidential and Proprietary - Qualcomm Technologies, Inc.
+//  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+//  All Rights Reserved.
+//  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
 //==============================================================================
 
@@ -44,7 +44,7 @@ extern "C" {
 
 // Provide values to use for API version.
 #define QNN_API_VERSION_MAJOR 2
-#define QNN_API_VERSION_MINOR 14
+#define QNN_API_VERSION_MINOR 24
 #define QNN_API_VERSION_PATCH 0
 
 /// NULL backend identifier.
@@ -195,7 +195,7 @@ typedef enum {
   QNN_COMMON_ERROR_OPERATION_NOT_PERMITTED = QNN_MIN_ERROR_COMMON + 5,
   /// Attempt to use QNN API on an unsupported platform
   QNN_COMMON_ERROR_PLATFORM_NOT_SUPPORTED = QNN_MIN_ERROR_COMMON + 6,
-  /// Communication errors with platform / OS service
+  /// Communication errors with platform / OS service (service is recoverable)
   QNN_COMMON_ERROR_SYSTEM_COMMUNICATION = QNN_MIN_ERROR_COMMON + 7,
   /// Loaded libraries are of incompatible versions
   QNN_COMMON_ERROR_INCOMPATIBLE_BINARIES = QNN_MIN_ERROR_COMMON + 8,
@@ -203,6 +203,8 @@ typedef enum {
   QNN_COMMON_ERROR_LOADING_BINARIES = QNN_MIN_ERROR_COMMON + 9,
   /// Resource allocation related error.
   QNN_COMMON_ERROR_RESOURCE_UNAVAILABLE = QNN_MIN_ERROR_COMMON + 10,
+  /// Communication errors with platform / OS service (service is non-recoverable)
+  QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL = QNN_MIN_ERROR_COMMON + 11,
   /// General error, which has not been identified as any other error type.
   QNN_COMMON_ERROR_GENERAL = QNN_MIN_ERROR_COMMON + 100,
 

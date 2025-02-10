@@ -1,10 +1,10 @@
-//=============================================================================
+//==============================================================================
 //
-//  Copyright (c) 2021-2023 Qualcomm Technologies, Inc.
-//  All Rights Reserved.
-//  Confidential and Proprietary - Qualcomm Technologies, Inc.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// All rights reserved.
+// Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
-//=============================================================================
+//==============================================================================
 
 /**
  *  @file
@@ -25,6 +25,7 @@
 
 // QNN System API headers
 #include "System/QnnSystemContext.h"
+#include "System/QnnSystemTensor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -104,6 +105,14 @@ typedef Qnn_ErrorHandle_t (*QnnSystemContext_GetMetaDataFn_t)(
 /** @brief See QnnSystemContext_free()*/
 typedef Qnn_ErrorHandle_t (*QnnSystemContext_FreeFn_t)(QnnSystemContext_Handle_t sysCtxHandle);
 
+//
+// From QnnSystemTensor.h
+//
+
+/** @brief See QnnSystemTensor_getMemoryFootprint()*/
+typedef Qnn_ErrorHandle_t (*QnnSystemTensor_getMemoryFootprintFn_t)(Qnn_Tensor_t tensor,
+                                                                    uint64_t* footprint);
+
 // clang-format off
 
 /**
@@ -112,11 +121,11 @@ typedef Qnn_ErrorHandle_t (*QnnSystemContext_FreeFn_t)(QnnSystemContext_Handle_t
  *
  */
 typedef struct {
-  QnnSystemContext_CreateFn_t         systemContextCreate;
-  QnnSystemContext_GetBinaryInfoFn_t  systemContextGetBinaryInfo;
-  QnnSystemContext_GetMetaDataFn_t    systemContextGetMetaData;
-  QnnSystemContext_FreeFn_t           systemContextFree;
-
+  QnnSystemContext_CreateFn_t            systemContextCreate;
+  QnnSystemContext_GetBinaryInfoFn_t     systemContextGetBinaryInfo;
+  QnnSystemContext_GetMetaDataFn_t       systemContextGetMetaData;
+  QnnSystemContext_FreeFn_t              systemContextFree;
+  QnnSystemTensor_getMemoryFootprintFn_t systemTensorGetMemoryFootprint;
 } QNN_SYSTEM_INTERFACE_VER_TYPE;
 
 /// QNN_INTERFACE_VER_TYPE initializer macro
@@ -125,6 +134,7 @@ typedef struct {
   NULL, /*systemContextGetBinaryInfo*/ \
   NULL, /*systemContextGetMetaData*/ \
   NULL, /*systemContextFree*/ \
+  NULL, /*systemTensorGetMemoryFootprint*/ \
 }
 
 typedef struct {

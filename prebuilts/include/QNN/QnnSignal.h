@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//  Copyright (c) 2020-2023 Qualcomm Technologies, Inc.
+//  Copyright (c) 2020-2024 Qualcomm Technologies, Inc.
 //  All Rights Reserved.
 //  Confidential and Proprietary - Qualcomm Technologies, Inc.
 //
@@ -141,6 +141,8 @@ typedef struct {
  *         - QNN_SIGNAL_ERROR_INVALID_ARGUMENT: at least one argument or config option invalid
  *         - QNN_SIGNAL_ERROR_INVALID_HANDLE: _backend_ is not a valid handle
  *         - QNN_SIGNAL_ERROR_UNSUPPORTED: if QnnSignal API is not supported on the backend
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  */
 QNN_API
 Qnn_ErrorHandle_t QnnSignal_create(Qnn_BackendHandle_t backend,
@@ -188,6 +190,8 @@ Qnn_ErrorHandle_t QnnSignal_setConfig(Qnn_SignalHandle_t signal, const QnnSignal
  *         - QNN_SIGNAL_ERROR_TRIGGER_SIGNAL_IDLE: if the signal is not currently in-use, and hence
  *           can not be triggered.
  *         - QNN_SIGNAL_ERROR_UNSUPPORTED: if QnnSignal API is not supported on the backend
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION: SSR occurence (successful recovery)
+ *         - QNN_COMMON_ERROR_SYSTEM_COMMUNICATION_FATAL: SSR occurence (unsuccessful recovery)
  */
 QNN_API
 Qnn_ErrorHandle_t QnnSignal_trigger(Qnn_SignalHandle_t signal);
