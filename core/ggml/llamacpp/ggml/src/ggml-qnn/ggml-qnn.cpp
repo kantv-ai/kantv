@@ -2820,6 +2820,9 @@ int qnn_instance::finalize_qnn_graph() {
 //  section-6: implementation of ggml-qnn backend
 // =================================================================================================
 static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dump_tensor_info) {
+    if (ggml_is_empty(tensor) || tensor->op == GGML_OP_RESHAPE || tensor->op == GGML_OP_TRANSPOSE || tensor->op == GGML_OP_VIEW || tensor->op == GGML_OP_PERMUTE || tensor->op == GGML_OP_NONE) {
+        return false;
+    }
     //bool supported_op = ((tensor->op == GGML_OP_ADD) || (tensor->op == GGML_OP_MUL_MAT));
     bool supported_op = (tensor->op == GGML_OP_ADD);
     if (!supported_op) {
@@ -2837,10 +2840,6 @@ static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dum
 
     int64_t ne0 = tensor->ne[0];
     int64_t ne1 = tensor->ne[1];
-
-    if (ggml_is_empty(tensor) || tensor->op == GGML_OP_RESHAPE || tensor->op == GGML_OP_TRANSPOSE || tensor->op == GGML_OP_VIEW || tensor->op == GGML_OP_PERMUTE || tensor->op == GGML_OP_NONE) {
-        return false;
-    }
 
     if (tensor->op == GGML_OP_ADD) {
         if (!ggml_are_same_shape(src0, src1)) {
@@ -2921,7 +2920,7 @@ static void ggml_qnn_add(ggml_backend_t backend, ggml_tensor * op) {
     op_perf.start();
 
 #if GGMLQNN_DEBUG
-    GGMLQNN_LOG_DEBUG("call %s\n", __func__);
+    GGMLQNN_LOG_DEBUG("call %s in dev %s\n", __func__, ctx->name);
     GGMLQNN_LOG_DEBUG("%15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
           src0->name,
           src0->type, ggml_type_name(src0->type), src0->ne[0], src0->ne[1], src0->ne[2],
@@ -3150,7 +3149,7 @@ static void ggml_qnn_mul_mat(ggml_backend_t backend, ggml_tensor * op) {
     op_perf.start();
 
 #if GGMLQNN_DEBUG
-    GGMLQNN_LOG_DEBUG("call %s\n", __func__);
+    GGMLQNN_LOG_DEBUG("call %s in dev %s\n", __func__, ctx->name);
     GGMLQNN_LOG_DEBUG("%15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
           src0->name,
           src0->type, ggml_type_name(src0->type), src0->ne[0], src0->ne[1], src0->ne[2],

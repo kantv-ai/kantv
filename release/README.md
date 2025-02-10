@@ -237,3 +237,9 @@
                  </ul>
 
 - v1.5.0-pre 2025-01-29, cleanup project to align upstream llama.cpp
+
+- v1.5.0, 2025-02-11,
+                    <ul>
+                        <li>upgrade Qualcommon QNN SDK to 2.31.0.250130</li>
+                        <li><a href="https://github.com/zhouwg/kantv/issues/246">the refined ggml-qnn backend</a> is released and works pretty good with whisper.cpp and llama.cpp on Xiaomi14</li>
+                    </ul>
