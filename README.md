@@ -274,6 +274,10 @@ https://github.com/zhouwg/kantv/issues/246
 
 ### Hot topics
 
+- improve <a href="https://github.com/zhouwg/kantv/blob/master/core/ggml/llamacpp/ggml/src/ggml-qnn/ggml-qnn.cpp">ggml-qnn backend</a> on Android phone
+
+- portting <a href="https://github.com/zhouwg/kantv/blob/master/core/ggml/llamacpp/ggml/src/ggml-qnn/ggml-qnn.cpp">ggml-qnn backend</a> on WoA(Windows on ARM)
+
 - bugfix in UI layer(Java)
 
 - bugfix in native layer(C/C++)
