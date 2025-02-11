@@ -293,7 +293,7 @@ Report issue in various Android-based phone or even submit PR to this project is
 - [How to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone](./README-qnn.md)
 - [How to integrate proprietary/open source codes to project KanTV for personal/proprietary/commercial R&D activity](https://github.com/zhouwg/kantv/issues/74)
 - [How to use whisper.cpp and ffmpeg to add subtitle to video](./docs/how-to-use-whispercpp-ffmpeg-add-subtitle-to-video.md)
-- [Authors](./AUTHROS)
+- [Authors](./AUTHORS)
 - [Acknowledgement](./docs/acknowledgement.md)
 - [ChangeLog](./release/README.md)
 
