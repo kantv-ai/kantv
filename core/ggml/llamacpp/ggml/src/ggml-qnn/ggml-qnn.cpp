@@ -2814,9 +2814,12 @@ int qnn_instance::finalize_qnn_graph() {
 //  section-6: implementation of ggml-qnn backend
 // =================================================================================================
 static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dump_tensor_info) {
+    if (tensor->op == GGML_OP_NONE) {
+        return true;
+    }
     if (ggml_is_empty(tensor) || tensor->op == GGML_OP_RESHAPE
     || tensor->op == GGML_OP_TRANSPOSE || tensor->op == GGML_OP_VIEW
-    || tensor->op == GGML_OP_PERMUTE || tensor->op == GGML_OP_NONE) {
+    || tensor->op == GGML_OP_PERMUTE) {
         return false;
     }
     //bool supported_op = ((tensor->op == GGML_OP_ADD) || (tensor->op == GGML_OP_MUL_MAT));
