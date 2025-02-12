@@ -264,11 +264,14 @@ here is a screenshot to demostrate ASR inference by running the excellent <a hre
 
 ### Highlight
 
-implementation of <a href="./README-qnn.md">ggml-qnn</a>(might be the first open-source implementation in the <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a> community)
+implementation of <a href="./README-qnn.md">ggml-qnn</a>, might be the first open-source implementation in the <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a> community). the evidence is as following:
 
-https://github.com/zhouwg/kantv/issues/121
+ - my first touch(fall in love) with ggml(03/05/2024---03/16/2024) #64  https://github.com/zhouwg/kantv/issues/64
+ - my first implementaton of ggml-qnn(03/29/2024---04/24/2024) #121 https://github.com/zhouwg/kantv/issues/121
 
-https://github.com/zhouwg/kantv/issues/246
+ - my first PR of ggml-qnn in upstream llama.cpp(04/24/2024---06/15/2024) https://github.com/ggerganov/llama.cpp/pull/6869
+
+ - my refined implmentation of ggml-qnn(01/29/2025---02/13/2025) https://github.com/zhouwg/kantv/issues/246
 
 ### Hot topics
 

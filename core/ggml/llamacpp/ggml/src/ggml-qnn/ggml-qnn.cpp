@@ -17,8 +17,11 @@
  * section-5 does ggml-qnn backend helper macro / data structure / function / class
  * section-6 does implementation of ggml-qnn backend according to ggml's backend subsystem
  *
- * currently I only provide GGML_OP_ADD's QNN backend implementation as a skeleton,
- * you can expand other ggml ops as your expertise or as your need(porting to Windows on ARM).
+ * for performance consideration, only provide GGML_OP_ADD and GGML_OP_MUL_MAT's QNN backend implementation:
+ *    - GGML_OP_ADD:  this is skeleton, you can expand other ggml ops as your expertise
+ *    - GGML_MUL_MAT: MUL_MAT take most of the compute time (about 95%), have to focus on MUL_MAT with QNN backend
+ *
+ * of course, you can porting ggml-qnn to Windows on ARM as your need.
  *
  * we love open source culture and we follow the rules, enjoy the great llama.cpp and enjoy ggml-qnn
  */
@@ -123,6 +126,9 @@ static void ggmlqnn_log_internal(ggml_log_level level, const char * file, const 
 #define GGML_QNN_LOGBUF_LEN                     4096
 #define ENABLE_QNNBACKEND_PERF                  1  // enable/disable op's perf info
 #define GGMLQNN_PRINT_QNN_INTERNAL_LOG          0  // enable/disable QNN's internal log
+#define GGMLQNN_PRINT_OP_ADD_LOG                0  // GGML_OP_ADD already verified with QNN-CPU / QNN-GPU / QNN-NPU
+#define GGMLQNN_PRINT_OP_MUL_MAT_LOG            1
+
 #define GGMLQNN_LOG_ERROR(...) ggmlqnn_log_internal(GGML_LOG_LEVEL_DEBUG,  __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define GGMLQNN_LOG_WARN(...)  ggmlqnn_log_internal(GGML_LOG_LEVEL_DEBUG , __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define GGMLQNN_LOG_INFO(...)  ggmlqnn_log_internal(GGML_LOG_LEVEL_DEBUG , __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
@@ -849,7 +855,7 @@ static int free_qnn_tensor(Qnn_Tensor_t * tensor) {
             free(src_qparam.bwAxisScaleOffsetEncoding.offsets);
         }
     }
-    GGMLQNN_LOG_DEBUG("tensor dims %p", QNN_TENSOR_GET_DIMENSIONS(*tensor));
+    //GGMLQNN_LOG_DEBUG("tensor dims %p", QNN_TENSOR_GET_DIMENSIONS(*tensor));
     free(QNN_TENSOR_GET_DIMENSIONS(*tensor));
     free(tensor);
 
@@ -2831,8 +2837,8 @@ static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dum
     || tensor->op == GGML_OP_PERMUTE) {
         return false;
     }
-    //bool supported_op = ((tensor->op == GGML_OP_ADD) || (tensor->op == GGML_OP_MUL_MAT));
-    bool supported_op = (tensor->op == GGML_OP_ADD);
+
+    bool supported_op = ((tensor->op == GGML_OP_ADD) || (tensor->op == GGML_OP_MUL_MAT));
     if (!supported_op) {
         return false;
     }
@@ -2853,6 +2859,7 @@ static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dum
         if (!ggml_are_same_shape(src0, src1)) {
             return false;
         }
+#if GGMLQNN_PRINT_OP_ADD_LOG
         if (b_dump_tensor_info) {
             GGMLQNN_LOG_DEBUG("op name:%s, tensor type:%s", ggml_op_name(tensor->op),
                               ggml_type_name(tensor->type));
@@ -2878,21 +2885,62 @@ static bool ggml_qnn_can_handle_op(const struct ggml_tensor * tensor, bool b_dum
                     tensor->nb[1], tensor->nb[2]);
 
         }
+#endif
         return (src0->type == GGML_TYPE_F32 || src0->type == GGML_TYPE_F16)
                && (src1->type == GGML_TYPE_F32 || src1->type == GGML_TYPE_F16);
 
     }
 
     if (tensor->op == GGML_OP_MUL_MAT) {
+#if GGMLQNN_PRINT_OP_MUL_MAT_LOG
+        if (b_dump_tensor_info) {
+            GGMLQNN_LOG_DEBUG("op name:%s, tensor type:%s", ggml_op_name(tensor->op),
+                              ggml_type_name(tensor->type));
+            GGMLQNN_LOG_DEBUG("src0 type:%s", ggml_type_name(tensor->src[0]->type));
+            GGMLQNN_LOG_DEBUG("src1 type:%s", ggml_type_name(tensor->src[1]->type));
+            GGMLQNN_LOG_DEBUG("dst  type:%s", ggml_type_name(tensor->type));
+            GGMLQNN_LOG_DEBUG(
+                    "src0 %15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
+                    src0->name,
+                    src0->type, ggml_type_name(src0->type), src0->ne[0], src0->ne[1], src0->ne[2],
+                    src0->nb[0], src0->nb[1], src0->nb[2]);
+            GGMLQNN_LOG_DEBUG(
+                    "src1 %15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
+                    src1->name,
+                    src1->type, ggml_type_name(src1->type), src1->ne[0], src1->ne[1], src1->ne[2],
+                    src1->nb[0], src1->nb[1], src1->nb[2]);
+            GGMLQNN_LOG_DEBUG(
+                    "dst  %15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
+                    tensor->name,
+                    tensor->type, ggml_type_name(tensor->type), tensor->ne[0], tensor->ne[1],
+                    tensor->ne[2],
+                    tensor->nb[0],
+                    tensor->nb[1], tensor->nb[2]);
+
+        }
+#endif
+        //FIXME: 2048 is an experimental value between ASR inference and LLM inference because
+        //       it's better only offload big matrix to QNN backend
+        if (ne01 <= 2048) {
+            return false;
+        }
+#if 0
+        //TODO: offload mul_mat to QNN backend
+        //we need to process type traint in func ggml_qnn_mul_mat(...) with following case:
+        //src0: q4_0, q6_k
+        //src1: f32
+        //dst : f32
+        return (src1->type == GGML_TYPE_F32 || src1->type == GGML_TYPE_F16)
+                && (tensor->type == GGML_TYPE_F32 || tensor->type == GGML_TYPE_F16);
+#else
+        //passthrough mul_mat
         return  (src0->type == GGML_TYPE_F32 || src0->type == GGML_TYPE_F16)
                 && (src1->type == GGML_TYPE_F32 || src1->type == GGML_TYPE_F16)
                 && (src0->type == src1->type) && (src0->type == tensor->type);
-
-        if (tensor->ne[1] < 32) {
-            return false;
-        }
+#endif
     }
 
+    //TODO:for other op
     return  (src0->type == GGML_TYPE_F32 || src0->type == GGML_TYPE_F16)
             && (src1->type == GGML_TYPE_F32 || src1->type == GGML_TYPE_F16)
             && (src0->type == src1->type) && (src0->type == tensor->type);
@@ -2939,7 +2987,8 @@ static void ggml_qnn_add(ggml_backend_t backend, ggml_tensor * op) {
         tensor_2 = ggml_qnn_create_tensor(dst);
     }
 
-#if GGMLQNN_DEBUG
+#if GGMLQNN_DEBUG //comment this line and uncomment next line when troubleshooting mul_mat issue
+//#if GGMLQNN_PRINT_OP_ADD_LOG
     GGMLQNN_LOG_DEBUG("call %s in dev %s\n", __func__, ctx->name);
     GGMLQNN_LOG_DEBUG("%15s: type = %i (%5s) ne = %5" PRIi64 " x %5" PRIi64 " x %5" PRIi64 ", nb = (%5zi, %5zi, %5zi)\n",
           src0->name,
@@ -3124,17 +3173,22 @@ static void ggml_qnn_add(ggml_backend_t backend, ggml_tensor * op) {
     QNN_VER_PTR(*tensor_0)->dimensions = tensor_0_dimensions;
     QNN_VER_PTR(*tensor_1)->dimensions = tensor_1_dimensions;
     QNN_VER_PTR(*tensor_2)->dimensions = tensor_2_dimensions;
-
+#if GGMLQNN_PRINT_OP_ADD_LOG
     op_perf.info();
+#endif
 }
 
-//FIXME: there is a known issue in this function although it's not used in this PR
+//TODO: type trait with op->src[0]
 /*
- * MUL_MAT take most of the compute time (about 95%). So to speed up llama, we have to focus on MUL_MAT.
- * We have three kinds of MUL_MAT to compute:
- * mul_mat_f32: both src0 and src1 are F32.
- * mul_mat_f16_f32: src0 is F16 and src1 is F32.
- * mul_mat_q_f32: src0 is quantized (Q4_0, Q4_1, ...), and src1 is F32.
+ * the procedure of ggml_qnn_mul_mat is similar to ggml_qnn_add,but there are type trait process
+ * for ggml_qnn_mul_mat, so it's a standalone function.
+ *
+ * MUL_MAT take most of the compute time (about 95%).so to speed up llama inference, we should focus on MUL_MAT.
+ *
+ * we have three kinds of MUL_MAT to compute:
+ * mul_mat_f32:     both src0 and src1 are F32, this will be naturally handled in QNN backend
+ * mul_mat_f16_f32: src0 is F16 and src1 is F32, f16 in src0 -> f32 in src0', then src0' * src1
+ * mul_mat_q_f32:   src0 is quantized (Q4_0, Q4_1, ...) and src1 is F32, quantize in src0 -> f32 in src0', then src0' * src1
 */
 static void ggml_qnn_mul_mat(ggml_backend_t backend, ggml_tensor * op) {
     Qnn_ErrorHandle_t error                     = QNN_SUCCESS;
@@ -3198,7 +3252,6 @@ static void ggml_qnn_mul_mat(ggml_backend_t backend, ggml_tensor * op) {
     GGMLQNN_LOG_DEBUG("tensor1 name %s", QNN_TENSOR_GET_NAME(tensor_1));
     GGMLQNN_LOG_DEBUG("tensor2 name %s", QNN_TENSOR_GET_NAME(tensor_2));
 #endif
-
     QNN_VER_PTR(*tensor_0)->type = QNN_TENSOR_TYPE_APP_WRITE;
     QNN_VER_PTR(*tensor_1)->type = QNN_TENSOR_TYPE_APP_WRITE;
     QNN_VER_PTR(*tensor_2)->type = QNN_TENSOR_TYPE_APP_READ;
@@ -3533,7 +3586,7 @@ static enum ggml_status ggml_backend_qnn_graph_compute(ggml_backend_t backend, s
     ggml_backend_qnn_context * ctx  = (ggml_backend_qnn_context *) backend->context;
     GGML_UNUSED(ctx);
 
-    GGMLQNN_LOG_DEBUG("cgraph->n_nodes %d", cgraph->n_nodes);
+    //GGMLQNN_LOG_DEBUG("cgraph->n_nodes %d", cgraph->n_nodes);
     for (int i = 0; i < cgraph->n_nodes; i++) {
         ggml_tensor * node = cgraph->nodes[i];
         if (ggml_is_empty(node) || node->op == GGML_OP_RESHAPE

@@ -50,21 +50,21 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
 
 ## News
 
-- 2025.1.29
+- 01/29/2025---present
   - re-launch activity of <a href="https://github.com/zhouwg/kantv/issues/246">refine ggml-qnn backend for latest ggml,whisper.cpp,llama.cpp</a></b>
   - data path works pretty good as expected with whisper.cpp and llama.cpp and llama-cli and test-backend-ops with ggml-qnn backend and verified on Xiaomi14(high-end Qualcomm mobile SoC equipped Android phone)
   - Support OPs
     - GGML_OP_ADD
 
-- 2024.5.28
+- 05/28/2024---06/15/2024
   - re-launch activity of <a href="https://github.com/ggerganov/llama.cpp/pull/6869">PR in upstream ggml community</a>
 
-- 2024.4.26
+- 04/26/2024
   - refine PR according to coding stye and pricinples of upstream ggml community
   - add command line test using <a href="https://github.com/ggerganov/llama.cpp/blob/master/tests/test-backend-ops.cpp">test-backend-ops.cpp</a>
   - refine PR according to comments from reviewer
 
-- 2024.4.24
+- 04/24/2024
   - a very beginning <a href="https://github.com/ggerganov/llama.cpp/pull/6869">PR to upstream ggml community</a>
   - data path works fine as expected by <a href="https://github.com/ggerganov/llama.cpp/pull/7641">a workaround approach which not accepted by the author of ggml backend subsystem</a> with whisper.cpp and llama.cpp using QNN backend and verified on both low-end and high-end Android phones based on Qualcomm mobile SoC
   - Support OPs
@@ -72,8 +72,11 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
     - GGML_OP_MUL
     - GGML_OP_MUL_MAT
 
-- 2024.3.29
-  - launch <a href="https://github.com/zhouwg/kantv/issues/121">PoC:add QNN backend for Qualcomm mobile SoC</a>
+ - 03/29/2024---04/24/2024
+   - first implementaton of ggml-qnn <a href="https://github.com/zhouwg/kantv/issues/121">PoC:add QNN backend for Qualcomm mobile SoC</a>
+
+ - 03/05/2024---03/16/2024
+  - first touch with ggml <a href="https://github.com/zhouwg/kantv/issues/64">PoC:clean-room implementation of real-time AI subtitle for English online-TV(OTT TV)</a>
 
 ## OS
 
