@@ -245,3 +245,10 @@
                         <li>minimize APP's permission to avoid user's security&privacy concern</li>
                         <li>there are three known memory leak issus in this implmentation</li>
                     </ul>
+
+- v1.6.0, 2025-02-13,
+                    <ul>
+                        <li>bug-fix of <a href="https://github.com/zhouwg/kantv/issues/246">the refined implmentation of ggml-qnn</a></li>
+                        <li>create <a href="https://github.com/kantv-ai">kantv.ai</a> and ready for the second PR to the upstream llama.cpp community</li>
+                        <li>update doc</a>
+                    </ul>

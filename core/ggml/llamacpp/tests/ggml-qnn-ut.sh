@@ -150,6 +150,7 @@ function run_ggml_qnn_ut()
         ;;
 
         GGML_OP_MUL_MAT)
+            echo "adb shell ${REMOTE_PATH}/${GGML_QNN_UT}  -t GGML_OP_MUL_MAT -b $qnnbackend"
             adb shell ${REMOTE_PATH}/${GGML_QNN_UT}  -t GGML_OP_MUL_MAT -b $qnnbackend
         ;;
 
@@ -168,7 +169,7 @@ function show_usage()
     echo "  $0 build"
     echo "  $0 updateqnnlib"
     echo "  $0 GGML_OP_ADD      0 (QNN_CPU) / 1(QNN_GPU) / 2(QNN_NPU)"
-    #echo "  $0 GGML_OP_MUL_MAT  0 (QNN_CPU) / 1(QNN_GPU) / 2(QNN_NPU)"
+    echo "  $0 GGML_OP_MUL_MAT  0 (QNN_CPU) / 1(QNN_GPU) / 2(QNN_NPU)"
     echo -e "\n\n\n"
 }
 
