@@ -50,9 +50,10 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
 
 ## News
 
-- 01/29/2025---present
+- 01/29/2025---02/13/2025
   - re-launch activity of <a href="https://github.com/zhouwg/kantv/issues/246">refine ggml-qnn backend for latest ggml,whisper.cpp,llama.cpp</a></b>
   - data path works pretty good as expected with whisper.cpp and llama.cpp and llama-cli and test-backend-ops with ggml-qnn backend and verified on Xiaomi14(high-end Qualcomm mobile SoC equipped Android phone)
+  - bugfix,santiy check, refine code according to coding stye and pricinples of upstream ggml community
   - Support OPs
     - GGML_OP_ADD
 
@@ -76,7 +77,7 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
    - first implementaton of ggml-qnn <a href="https://github.com/zhouwg/kantv/issues/121">PoC:add QNN backend for Qualcomm mobile SoC</a>
 
  - 03/05/2024---03/16/2024
-  - first touch with ggml <a href="https://github.com/zhouwg/kantv/issues/64">PoC:clean-room implementation of real-time AI subtitle for English online-TV(OTT TV)</a>
+   - first touch with ggml <a href="https://github.com/zhouwg/kantv/issues/64">PoC:clean-room implementation of real-time AI subtitle for English online-TV(OTT TV)</a>
 
 ## OS
 
