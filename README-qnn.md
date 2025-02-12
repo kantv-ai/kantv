@@ -56,6 +56,7 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
   - bugfix,santiy check, refine code according to coding stye and pricinples of upstream ggml community
   - Support OPs
     - GGML_OP_ADD
+  - ready for the second PR to upstream llama.cpp community
 
 - 05/28/2024---06/15/2024
   - re-launch activity of <a href="https://github.com/ggerganov/llama.cpp/pull/6869">PR in upstream ggml community</a>
