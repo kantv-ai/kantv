@@ -262,22 +262,7 @@ here is a screenshot to demostrate ASR inference by running the excellent <a hre
   </ol>
 </details>
 
-### Highlight
-
-implementation of <a href="./README-qnn.md">ggml-qnn</a>, might be the first open-source implementation in the <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a> community. the evidence is as following:
-
- - my first touch(fall in love or "play") with ggml(03/05/2024---03/16/2024)  https://github.com/zhouwg/kantv/issues/64
- - my first implementaton of ggml-qnn(03/29/2024---04/24/2024) https://github.com/zhouwg/kantv/issues/121
-
- - my first PR of ggml-qnn in upstream llama.cpp(04/24/2024---06/15/2024) https://github.com/ggerganov/llama.cpp/pull/6869
-
- - my refined implementation of ggml-qnn(01/29/2025---02/13/2025) https://github.com/zhouwg/kantv/issues/246
-
 ### Hot topics
-
-- improve <a href="https://github.com/zhouwg/kantv/blob/master/core/ggml/llamacpp/ggml/src/ggml-qnn/ggml-qnn.cpp">ggml-qnn backend</a> on Android phone
-
-- porting <a href="https://github.com/zhouwg/kantv/blob/master/core/ggml/llamacpp/ggml/src/ggml-qnn/ggml-qnn.cpp">ggml-qnn backend</a> on WoA(Windows on ARM)
 
 - bugfix in UI layer(Java)
 
