@@ -52,8 +52,8 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
 
 - 01/29/2025---02/13/2025
   - re-launch activity of <a href="https://github.com/zhouwg/kantv/issues/246">refine ggml-qnn backend for latest ggml,whisper.cpp,llama.cpp</a></b>
-  - data path works pretty good as expected with whisper.cpp and llama.cpp and llama-cli and test-backend-ops with ggml-qnn backend and verified on Xiaomi14(high-end Qualcomm mobile SoC equipped Android phone)
-  - bugfix,santiy check, refine code according to coding stye and pricinples of upstream ggml community
+  - data path works pretty good as expected with whisper.cpp and llama.cpp and test-backend-ops and llama-cli with ggml-qnn backend and verified on Xiaomi14(high-end Qualcomm mobile SoC equipped Android phone)
+  - bugfix,santiy check,refine code according to coding stye and pricinple of upstream ggml community
   - Support OPs
     - GGML_OP_ADD
   - ready for the second PR to upstream llama.cpp community
@@ -123,20 +123,20 @@ Any **mainstream** Android phone equipped with Qualcomm's mobile SoC should be s
   the default installation path is /opt/qcom/aistack/qairt/2.31.0.250130/
 
 
-- for programmers, using the official llama_cli and test-backend-ops to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
+- for llama.cpp community programmers, using the official llama-cli and test-backend-ops to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
 
 ```
-  git clone https://github.com/zhouwg/llama.cpp
+  git clone https://github.com/kantv-ai/llama.cpp
   cd llama.cpp
-  git checkout ggml-qnn-for-latest-upstream-llamacpp
+  git checkout kantvai-ggmlqnn
   ./build-run-android.sh build          (it'll setup local build envs automatically and build the entire project)
   ./build-run-android.sh updateqnnlib   (upload Qualcomm's QNN binary runtime libs to Android phone)
-  ./build-run-android.sh run            (running llama-cli on Android pohone)
+  ./build-run-android.sh run_llamacli   (running llama-cli on Android pohone)
   ./build-run-android.sh run_testop     (running test-backend-ops on Android phone)
 
 ```
 
-- for programmers, using self-made command line application to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
+- for project programmers, using self-made command line application to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
 
 ```
   git clone https://github.com/zhouwg/kantv
