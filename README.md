@@ -271,7 +271,7 @@ implementation of <a href="./README-qnn.md">ggml-qnn</a>, might be the first ope
 
  - my first PR of ggml-qnn in upstream llama.cpp(04/24/2024---06/15/2024) https://github.com/ggerganov/llama.cpp/pull/6869
 
- - my refined implmentation of ggml-qnn(01/29/2025---02/13/2025) https://github.com/zhouwg/kantv/issues/246
+ - my refined implementation of ggml-qnn(01/29/2025---02/13/2025) https://github.com/zhouwg/kantv/issues/246
 
 ### Hot topics
 
