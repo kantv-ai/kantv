@@ -123,16 +123,16 @@ Any **mainstream** Android phone equipped with Qualcomm's mobile SoC should be s
   the default installation path is /opt/qcom/aistack/qairt/2.31.0.250130/
 
 
-- for llama.cpp community programmers, using the official llama-cli and test-backend-ops to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
+- for <b>llama.cpp community programmers</b>, using <b>the official llama-cli and test-backend-ops command line tool </b> to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
 
 ```
   git clone https://github.com/kantv-ai/llama.cpp
   cd llama.cpp
   git checkout kantvai-ggmlqnn
-  ./build-run-android.sh build          (it'll setup local build envs automatically and build the entire project)
-  ./build-run-android.sh updateqnnlib   (upload Qualcomm's QNN binary runtime libs to Android phone)
-  ./build-run-android.sh run_llamacli   (running llama-cli on Android pohone)
-  ./build-run-android.sh run_testop     (running test-backend-ops on Android phone)
+  ./scripts/build-run-android.sh build          (it'll setup local build envs automatically and build the entire project)
+  ./scripts/build-run-android.sh updateqnnlib   (upload Qualcomm's QNN binary runtime libs to Android phone)
+  ./scripts/build-run-android.sh run_llamacli   (running llama-cli on Android pohone)
+  ./scripts/build-run-android.sh run_testop     (running test-backend-ops on Android phone)
 
 ```
 
