@@ -136,7 +136,7 @@ static void ggmlqnn_log_internal(ggml_log_level level, const char * file, const 
         if (len < (GGML_QNN_LOGBUF_LEN - len_prefix)) {
 #if (defined __ANDROID__) || (defined ANDROID)
             //for Android application(standard APP or command line tool)
-            __android_log_print(ANDROID_LOG_INFO, "ggml-qnn", "%s\n", s_ggmlqnn_log_internal_buf);
+            __android_log_print(ANDROID_LOG_INFO, "KANTV", "%s\n", s_ggmlqnn_log_internal_buf);
 #endif
 #if (defined __ANDROID__) || (defined ANDROID)
             //do nothing when running on Snapdragon based Android device
@@ -3655,7 +3655,7 @@ static ggml_backend_t ggml_backend_qnn_device_init_backend(ggml_backend_dev_t de
         params = 0;
     }
     ggml_backend_t qnn_backend = ggml_backend_qnn_init((int) (intptr_t) params,
-                                                       "/data/local/tmp/");
+                                                       "/data/data/com.cdeos.kantv/qnnlib/");
 
     return qnn_backend;
 
