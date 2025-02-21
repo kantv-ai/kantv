@@ -132,7 +132,7 @@ function build_kantv_apk()
 
         printf "succeed to build apk ${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-unsigned.apk by cmdline-tools\n"
         ls -lah ${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-unsigned.apk
-
+        sign_kantv_apk
         cd ${PROJECT_ROOT_PATH}
         echo ""
         echo ""
@@ -150,6 +150,49 @@ function build_kantv_apk()
     echo ""
     echo "------------------------------------------------------------------------------------------"
     echo ""
+}
+
+
+function sign_kantv_apk()
+{
+    declare -r KANTV_KEY_PASSWORD="123456"
+    declare -r KANTV_KEYSTORE_PASSWORD="123456"
+    declare -r KANTV_KEY_ALIAS="relase-keystore"
+    declare -r KANTV_KEY_VALIDITY=365
+
+    if ! command -v keytool || ! command -v jarsigner; then
+        echo "keytool or  jarsigner is not installed, pls install JDK first"
+        exit 1
+    fi
+    keytool -genkeypair \
+            -alias "$KANTV_KEY_ALIAS" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity "$KANTV_KEY_VALIDITY" \
+            -keystore "${PROJECT_ROOT_PATH}/kantv.jks" \
+            -storepass "$KANTV_KEYSTORE_PASSWORD" \
+            -keypass "$KANTV_KEY_PASSWORD" \
+            -dname "CN=kantv authors, OU=kantv, O=kantv, L=China, ST=China, C=China"
+    #check whether jks file is generated
+    if [ -f "${PROJECT_ROOT_PATH}/kantv.jks" ]; then
+        echo "succeed to generate keystore ${PROJECT_ROOT_PATH}/kantv.jks"
+    else
+        echo "failed to generate keystore ${PROJECT_ROOT_PATH}/kantv.jks"
+        exit 1
+    fi
+    #sign apk
+    jarsigner -verbose -keystore "${PROJECT_ROOT_PATH}/kantv.jks" \
+              -storepass "$KANTV_KEYSTORE_PASSWORD" \
+              -keypass "$KANTV_KEY_PASSWORD" "${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-unsigned.apk" "$KANTV_KEY_ALIAS" \
+              -signedjar "${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-signed.apk"
+
+    if [ $? -ne 0 ]; then
+        echo -e "${TEXT_RED}failed to sign apk,you may need to sign it mannually${TEXT_RESET}" 
+        echo "unsigned apk located in:${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-unsigned.apk" 
+        exit 1
+    else
+        echo -e "${TEXT_GREEN}succeed to sign apk: ${PROJECT_ROOT_PATH}/cdeosplayer/kantv/build/outputs/apk/all64/release/kantv-all64-release-signed.apk${TEXT_RESET}"  
+    fi                
 }
 
 
