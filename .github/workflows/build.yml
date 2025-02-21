@@ -1,0 +1,29 @@
+name: build kantv
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        required: false
+        type: string
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: '0'
+        
+      - name: build android
+        with:
+          path: ${{ github.workspace }}  
+        run: |
+          source build/envsetup.sh  
+          lunch 1  
+          ./build-all.sh android
