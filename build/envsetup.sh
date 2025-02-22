@@ -83,6 +83,7 @@ export NDK_ROOT=${ANDROID_NDK}          # make some open source project happy
 export PATH=${ANDROID_NDK_ROOT}:${PATH}
 
 export ANDROID_HOME=${PROJECT_ROOT_PATH}/prebuilts/toolchain/android-sdk
+export ANDROID_SDK_ROOT=${ANDROID_HOME} # build with github actions, this is required
 export PATH=${ANDROID_HOME}/cmdline-tools/latest/bin:${PATH}
 export PATH=${ANDROID_HOME}/cmake/3.22.1/bin:${PATH}
 

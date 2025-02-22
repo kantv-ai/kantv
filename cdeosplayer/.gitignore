@@ -3,7 +3,6 @@
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store
-/build
 /buildout
 /captures
 android-ndk-prof

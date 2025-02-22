@@ -30,6 +30,11 @@ android {
 
         //fix conflict between open source native libs and prebuilt proprietary native libs(IDE would complain more than one file was found)
         packagingOptions {
+            //native libs packing,leagcy mode is used for better compatibility
+            jniLibs {
+                useLegacyPackaging = true
+            }
+        
             pickFirst 'lib/arm64-v8a/libkantv-media.so'
             //pickFirst 'lib/arm64-v8a/libkantv-ffmpeg.so'
             pickFirst 'lib/arm64-v8a/libggml-jni.so'
@@ -91,6 +96,12 @@ android {
         }
     }
 
+    //FranzKafka:2025-02-22, add version/compiletime in apk name
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "kantv-${variant.buildType.name}-v${project.ext.releaseVersion}-unsigned.apk"
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
