@@ -264,6 +264,7 @@ This project is a <b>pure AI learning&study</b> project, so the Android APK is a
 - Access to storage is required for ASR inference and LLM inference(read/load models from storage)
 - Access to device information is required to obtain phone's network status information, distinguishing whether the current network is Wi-Fi or mobile when playing online TV
 
+### Screenshots
 <hr>
 here is a short video to demostrate AI subtitle by running the great & excellent & amazing<a href="https://github.com/ggerganov/whisper.cpp"> whisper.cpp </a> on a Xiaomi 14 device - <b>fully offline, on-device</b>.
 
