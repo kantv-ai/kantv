@@ -25,14 +25,24 @@ KanTV("Kan", aka Chinese PinYin "Kan" or Chinese HanZi "看" or English "watch/l
 
 ### Highlight
 
-As far as I know, probably be the first <a href="https://github.com/zhouwg/kantv/issues/246">open-source implmentation of ggml-qnn</a>
+As far as we know, probably be the first <a href="https://github.com/zhouwg/kantv/issues/246">open-source implmentation of ggml-qnn</a>
+
+### Supported Chipset
+
+    Snapdragon 8 Gen 1
+    Snapdragon 8 Gen 1+
+    Snapdragon 8 Gen 2
+    Snapdragon 8 Gen 3
+    Snapdragon 8 Gen 4
+    Snapdragon 8 Elite
+
 
 ### Software architecture of KanTV Android
 
 ![Image](https://github.com/user-attachments/assets/0ee33100-92da-43f7-baa6-7c4129525aba)
 
 
-### How to build project
+### How to build project manually
 
 
 #### Fetch source codes
@@ -224,12 +234,30 @@ cd kantv
         lunch 1
         ./build-all.sh android
 
-<!--
-- Latest prebuit APK could be found here [![Github](https://user-images.githubusercontent.com/6889919/122489234-c13db400-d011-11eb-9d8c-8e4b2555dabe.png)](https://github.com/zhouwg/kantv/raw/master/release/kantv-latest.apk)(the prebuilt APK sometimes might be not available because generate APK from source code is preferrred).
--->
+
+
+### How to build project from Github
+
+https://github.com/kantv-ai/kantv/actions
+
+The latest prebuit APK could be found at https://github.com/kantv-ai/kantv/actions/runs/13477810505 accordingly.
+
+The size of generated APK is about 100M, this might be not make sense for APP's user, we are working on it.
+![Screenshot from 2025-02-23 09-09-47](https://github.com/user-attachments/assets/668d839e-8858-407b-a656-e5c4bbb22875)
+![Screenshot from 2025-02-23 09-11-24](https://github.com/user-attachments/assets/eb2ee580-c3d1-4ea4-b60e-8e6306329a6f)
+![Screenshot from 2025-02-23 09-10-51](https://github.com/user-attachments/assets/30e1d64c-cf3c-43dc-b029-1c09ec6ac0ec)
 
 
 ### Run Android APK on Android phone
+
+You will need an Android smartphone with adb-connected running on one of below Qualcomm SoCs:
+
+    SM8450    (Snapdragon 8 Gen 1+)
+    SM8550    (Snapdragon 8 Gen 2)
+    SM8650    (Snapdragon 8 Gen 3)
+    SM8750    (Snapdragon 8 Gen 4)
+    SM8750-AB (Snapdragon 8 Elite)
+
 
 This project is a <b>pure AI learning&study</b> project, so the Android APK is a green Android APP and will not collect/upload user data in Android device. The Android APK should be works well on any Qualcomm mobile SoC equipped <b>mainstream</b> Android phone and the following permissions are required:
 
