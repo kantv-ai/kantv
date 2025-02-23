@@ -34,12 +34,13 @@ android {
             jniLibs {
                 useLegacyPackaging = true
             }
-        
+
             pickFirst 'lib/arm64-v8a/libkantv-media.so'
-            //pickFirst 'lib/arm64-v8a/libkantv-ffmpeg.so'
+            pickFirst 'lib/arm64-v8a/libQnnSaver.so'
             pickFirst 'lib/arm64-v8a/libggml-jni.so'
             //pickFirst 'lib/arm64-v8a/libQnn*.so'
-            pickFirst 'lib/arm64-v8a/libncnn-jni.so'
+            //not used since 02/2025 because we will focus on device-AI through llama.cpp
+            //pickFirst 'lib/arm64-v8a/libncnn-jni.so'
         }
 
         versionName project.ext.releaseVersion
