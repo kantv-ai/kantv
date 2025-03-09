@@ -252,3 +252,8 @@
                         <li>create <a href="https://github.com/kantv-ai">kantv.ai</a> and ready for the second PR to the upstream llama.cpp community</li>
                         <li>update doc</a>
                     </ul>
+
+- v1.6.1, 2025-03-09,
+                    <ul>
+                        <li>sync code from https://github.com/kantv-ai/ggml-qnn</a>
+                    </ul>

@@ -211,7 +211,6 @@
          _txtGGMLStatus = mActivity.findViewById(R.id.ggmlStatus);
          _btnBenchmark = mActivity.findViewById(R.id.btnBenchmark);
          _btnSelectImage = mActivity.findViewById(R.id.btnSelectImage);
-         //TODO: change to voice input, and then use whisper.cpp to convert it into text
          _txtUserInput = mActivity.findViewById(R.id.txtPrompt);
          //_ivInfo = mActivity.findViewById(R.id.imgInfo);
          _llInfoLayout = mActivity.findViewById(R.id.llInfoLayout);
@@ -284,7 +283,6 @@
 
          _txtGGMLInfo.setText("");
          _txtGGMLInfo.append(phoneInfo + "\n");
-         _txtGGMLInfo.append("Powered by GGML(https://github.com/ggerganov/ggml)\n");
 
          Spinner spinnerBenchType = mActivity.findViewById(R.id.spinnerBenchType);
          String[] arrayBenchType = getResources().getStringArray(R.array.benchType);
@@ -831,14 +829,13 @@
                                  }
                              }
 
-
                              if (strBenchmarkInfo.startsWith("asr_result")) { //when got asr result, playback the audio file
                                  playAudioFile();
                              }
 
                              CDELog.j(TAG, benchmarkTip);
-                             _txtGGMLStatus.setText("");
-                             _txtGGMLStatus.setText(benchmarkTip);
+                             //_txtGGMLStatus.setText("");
+                             _txtGGMLStatus.append(benchmarkTip);
 
                              //update UI status
                              _btnBenchmark.setEnabled(true);
@@ -1012,7 +1009,6 @@
                      return;
                  }
 
-
                  if (content.startsWith("reset")) {
                      _txtASRInfo.setText("");
                      return;
@@ -1021,13 +1017,12 @@
                  if (content.startsWith("unknown")) {
 
                  } else {
-                     /*
                      if (content.startsWith("llama-timings")) {
+                         CDELog.j(TAG, "LLM timings");
                          _txtGGMLStatus.setText("");
+                         //_txtGGMLStatus.setText("\n");
                          _txtGGMLStatus.append(content);
-                     }
-                     else */
-                     {
+                     } else {
                          nLogCounts++;
                          if (nLogCounts > 100) {
                              //_txtASRInfo.setText(""); //make QNN SDK happy on Xiaomi14

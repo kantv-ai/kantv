@@ -4,8 +4,6 @@
 
 #include "ggml.h"
 #include "gguf.h"
-#include "libavutil/cde_log.h"
-#include "libavutil/cde_assert.h"
 
 #include <assert.h>
 #include <math.h>
@@ -18,7 +16,7 @@
 #include <arm_sve.h>
 #endif // __ARM_FEATURE_SVE
 
-#if defined(__ARM_NEON) && !defined(__CUDACC__)
+#if defined(__ARM_NEON) && !defined(__CUDACC__) && !defined(__MUSACC__)
 // if YCM cannot find <arm_neon.h>, make a symbolic link to it, for example:
 //
 //   $ ln -sfn /Library/Developer/CommandLineTools/usr/lib/clang/13.1.6/include/arm_neon.h ./src/

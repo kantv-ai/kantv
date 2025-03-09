@@ -109,24 +109,10 @@
  import javax.xml.parsers.DocumentBuilder;
  import javax.xml.parsers.DocumentBuilderFactory;
 
- import cdeos.media.player.CDEMediaType;
-
  import static cdeos.media.player.CDEMediaType.MEDIA_MOVIE;
  import static cdeos.media.player.CDEMediaType.MEDIA_RADIO;
  import static cdeos.media.player.CDEMediaType.MEDIA_TV;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_ASR;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_CV_MNIST;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_LLM;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_MEMCPY;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_MULMAT;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_QNN_AUTO_UT;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_QNN_GGML_OP;
- import static cdeos.media.player.CDEUtils.bench_type.GGML_BENCHMARK_TEXT2IMAGE;
-
  import androidx.annotation.Nullable;
- import androidx.annotation.RequiresApi;
- import androidx.core.app.NotificationBuilderWithBuilderAccessor;
-
 
  public class CDEUtils {
      private final static String TAG = CDEUtils.class.getName();
@@ -141,7 +127,7 @@
      private static String mApiGatewayServerUrl = "http://www.cdeos.com:8888/wiseplay/getlicense";
      private static String mLocalEMS = "http://192.168.0.200:81/ems";
 
-     private static String mKANTVAPKVersion = "1.3.11";
+     private static String mKANTVAPKVersion = "1.6.1";
      private static KANTVDRM mKANTVDRM = KANTVDRM.getInstance();
 
      public static final String INVALID_DEVICE_ID = "000000000000000";

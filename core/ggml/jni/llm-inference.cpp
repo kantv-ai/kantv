@@ -101,7 +101,7 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
         return 1;
     }
 
-    LOGGD("enter llama_inference_main");
+    LOGGD("enter llama_inference_main backend_type %d", backend_type);
     if (backend_type != QNN_BACKEND_GGML) {
 #ifdef GGML_USE_QNN
         LOGGD("using QNN backend %d", backend_type);
@@ -112,6 +112,8 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
         GGML_JNI_NOTIFY("QNN backend %s is disabled and only ggml backend is supported\n", ggml_backend_qnn_get_devname(backend_type));
         return 1;
 #endif
+    } else {
+        params.main_gpu = backend_type;
     }
 
     common_init();
@@ -704,7 +706,7 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
                 const std::string token_str = common_token_to_piece(ctx, id, params.special);
 
                 // Console/Stream Output
-                LOG("%s", token_str.c_str());
+                //LOG("%s", token_str.c_str());
                 max_tokens++;
 #if (defined __ANDROID__) || (defined ANDROID)
                 if (ggml_jni_is_valid_utf8(token_str.c_str())) {

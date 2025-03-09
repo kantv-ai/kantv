@@ -203,20 +203,12 @@ static void ggml_log_internal_v(enum ggml_log_level level, const char * format, 
     char buffer[128];
     int len = vsnprintf(buffer, 128, format, args);
     if (len < 128) {
-#if (defined __ANDROID__) || (defined ANDROID)
-        __android_log_print(GGML_LOG_LEVEL_INFO, "KANTV", "%s", buffer);
-#else
         g_logger_state.log_callback(level, buffer, g_logger_state.log_callback_user_data);
-#endif
     } else {
         char * buffer2 = (char *) calloc(len + 1, sizeof(char));
         vsnprintf(buffer2, len + 1, format, args_copy);
         buffer2[len] = 0;
-#if (defined __ANDROID__) || (defined ANDROID)
-        __android_log_print(GGML_LOG_LEVEL_INFO, "KANTV", "%s", buffer2);
-#else
         g_logger_state.log_callback(level, buffer2, g_logger_state.log_callback_user_data);
-#endif
         free(buffer2);
     }
     va_end(args_copy);
@@ -248,7 +240,11 @@ void ggml_log_callback_default(enum ggml_log_level level, const char * text, voi
 
 
 void * ggml_aligned_malloc(size_t size) {
+#if defined(__s390x__)
+    const int alignment = 256;
+#else
     const int alignment = 64;
+#endif
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
     return _aligned_malloc(size, alignment);
@@ -1387,7 +1383,7 @@ bool ggml_are_same_stride(const struct ggml_tensor * t0, const struct ggml_tenso
         (t0->nb[3] == t1->nb[3]);
 }
 
-// check if t1 can be represented as a repeatition of t0
+// check if t1 can be represented as a repetition of t0
 bool ggml_can_repeat(const struct ggml_tensor * t0, const struct ggml_tensor * t1) {
     static_assert(GGML_MAX_DIMS == 4, "GGML_MAX_DIMS is not 4 - update this function");
 

@@ -26,6 +26,10 @@
 #include <ctime>
 #include <functional>
 
+#ifdef GGML_USE_QNN
+#include "ggml-qnn.h"
+#endif
+
 #if defined(_MSC_VER)
 #pragma warning(disable: 4244 4267) // possible loss of data
 #endif
@@ -9709,6 +9713,11 @@ struct llama_context * llama_init_from_model(
         // add ACCEL backends (such as BLAS)
         for (size_t i = 0; i < ggml_backend_dev_count(); ++i) {
             ggml_backend_dev_t dev = ggml_backend_dev_get(i);
+#ifdef GGML_USE_QNN // avoid side-effect to other backends
+            if (QNN_BACKEND_GGML == model->params.main_gpu) {
+                break;
+            }
+#endif
             if (ggml_backend_dev_type(dev) == GGML_BACKEND_DEVICE_TYPE_ACCEL) {
                 //weiguo,2025-02-05
 #ifndef GGML_USE_QNN
@@ -10110,6 +10119,7 @@ struct llama_perf_context_data llama_perf_context(const struct llama_context * c
     return data;
 }
 
+#if !(defined __ANDROID__)
 void llama_perf_context_print(const struct llama_context * ctx) {
     const auto data = llama_perf_context(ctx);
 
@@ -10122,6 +10132,51 @@ void llama_perf_context_print(const struct llama_context * ctx) {
             __func__, data.t_eval_ms, data.n_eval, data.t_eval_ms / data.n_eval, 1e3 / data.t_eval_ms * data.n_eval);
     LLAMA_LOG_INFO("%s:       total time = %10.2f ms / %5d tokens\n", __func__, (t_end_ms - data.t_start_ms), (data.n_p_eval + data.n_eval));
 }
+#else
+#include "kantv-asr.h"
+#include "ggml-jni.h"
+#include <sstream>
+#include <iomanip>
+void llama_perf_context_print(const struct llama_context * ctx) {
+    const auto timings = llama_perf_context(ctx);
+    const double t_end_ms = 1e-3 * ggml_time_us();
+
+    std::ostringstream timing;
+    timing << "llama-timings:\t";
+
+    LOGGV("\n");
+    LOGGV("%s:        load time = %10.2f ms\n", __func__, timings.t_load_ms);
+    LOGGV("%s: prompt eval time = %10.2f ms / %5d tokens (%8.2f ms per token, %8.2f tokens per second)\n",
+          __func__, timings.t_p_eval_ms, timings.n_p_eval, timings.t_p_eval_ms / timings.n_p_eval,
+          1e3 / timings.t_p_eval_ms * timings.n_p_eval);
+    LOGGV("%s:        eval time = %10.2f ms / %5d runs   (%8.2f ms per token, %8.2f tokens per second)\n",
+          __func__, timings.t_eval_ms, timings.n_eval, timings.t_eval_ms / timings.n_eval,
+          1e3 / timings.t_eval_ms * timings.n_eval);
+    LOGGV("%s:       total time = %10.2f ms / %5d tokens\n", __func__,
+          (t_end_ms - timings.t_start_ms), (timings.n_p_eval + timings.n_eval));
+    
+    timing << "   load time  = " << std::setw(10) << std::fixed << std::setprecision(2)
+           << (timings.t_load_ms) << " ms";
+
+    timing << "\n";
+    timing << "prompt eval time = " << std::setw(10) << std::fixed << std::setprecision(2)
+           << timings.t_p_eval_ms << " ms / "
+           << timings.n_p_eval << " tokens ("
+           << (timings.t_p_eval_ms / timings.n_p_eval) << " ms per token, "
+           << (1e3 / timings.t_p_eval_ms * timings.n_p_eval)
+           << " tokens per second";
+    timing << "\n";
+
+    timing << "   total time = " << std::setw(10) << std::fixed << std::setprecision(2)
+           << ((t_end_ms - timings.t_start_ms)) << " ms / "
+           << (timings.n_p_eval + timings.n_eval)
+           << "  tokens\n";
+
+    std::string result = timing.str();
+    kantv_asr_notify_benchmark(result);
+}
+
+#endif
 
 void llama_perf_context_reset(struct llama_context * ctx) {
     ctx->t_start_us  = ggml_time_us();
