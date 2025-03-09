@@ -7236,7 +7236,7 @@ int qnn_ggml_op_automation_ut(const char *model_path, int num_threads, int n_bac
             break;
         }
 
-#if 0
+#if 1
         for (int k = 0; k < 7; ++k) {
             const ggml_type wtype =
                     k == 0 ? GGML_TYPE_Q4_0 :
@@ -7376,7 +7376,7 @@ int qnn_ggml_op_automation_ut(const char *model_path, int num_threads, int n_bac
         }
 
         kantv_asr_notify_benchmark_c("reset");
-#if 0
+#if 1
         // Q4_0 | Q4_1
         snprintf(strbuf, sizeof(strbuf),
                  "%4zu x %4zu: Q4_0 %7.1f GFLOPS (%3d runs) | Q4_1 %7.1f GFLOPS (%3d runs)\n",

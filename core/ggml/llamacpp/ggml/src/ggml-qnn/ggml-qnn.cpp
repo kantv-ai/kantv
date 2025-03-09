@@ -5,7 +5,7 @@
  * https://www.qualcomm.com/developer/software/qualcomm-ai-engine-direct-sdk
  * https://developer.qualcomm.com/software/hexagon-dsp-sdk/tools
  *
- * the implementation of ggml-qnn backend has six sections:
+ * this single-source-file or self-contained implementation of ggml-qnn backend has seven sections:
  * section-1 does forward/external declaration,
  * section-2 defines ggml-qnn internal log function
  * section-3 does general helper macro / data structure / function
@@ -111,23 +111,6 @@ class  qnn_instance;
 struct ggml_backend_qnn_context;
 typedef void (* ggmlqnn_op_func_t)(ggml_backend_qnn_context * ctx, ggml_tensor * op);
 
-static size_t         ggmlqnn_get_opcaps_size(void);
-static int            free_qnn_tensor(Qnn_Tensor_t * tensor);
-static size_t         ggmlqnn_get_op_index(const ggml_tensor * tensor);
-static const char   * ggmlqnn_get_error_string(Qnn_ErrorHandle_t qnn_error_code);
-static Qnn_DataType_t ggmlqnn_datatype_from_ggml_datatype(enum ggml_type ggmltype);
-static void         * ggmlqnn_type_trait(ggml_backend_qnn_context * ctx, ggml_tensor * op);
-static void           ggmlqnn_get_graphkey_from_op(const ggml_tensor * op, std::string & output);
-static enum ggml_status ggml_backend_qnn_graph_compute(ggml_backend_t backend, struct ggml_cgraph * cgraph);
-static void           ggmlqnn_log_internal(ggml_log_level level, const char * file, const char * func, int line, const char * format, ...);
-static uint8_t      * ggmlqnn_create_rpc_buffer(qnn_instance * instance, const ggml_tensor * ggml_tensor, Qnn_Tensor_t * qnn_tensor, bool b_copydata);
-static Qnn_Tensor_t * ggmlqnn_create_compute_tensor(qnn_instance * instance, Qnn_GraphHandle_t handle, const ggml_tensor * tensor, Qnn_TensorType_t tensor_type);
-static void           ggmlqnn_print_tensors_info(const char * func_name, ggml_backend_qnn_context * ctx, const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst);
-
-static Qnn_OpConfig_t ggmlqnn_create_op_config(const char * name, const char * package, const char * type,
-                                        Qnn_Param_t * params, uint32_t num_params,
-                                        Qnn_Tensor_t * inputs, uint32_t num_inputs,
-                                        Qnn_Tensor_t * outputs, uint32_t num_outputs);
 static Qnn_Tensor_t * ggmlqnn_create_general_tensor(const ggml_tensor * tensor, const char * name,
                                              Qnn_TensorType_t qnn_tensor_type,
                                              Qnn_DataType_t qnn_data_type,
@@ -135,35 +118,34 @@ static Qnn_Tensor_t * ggmlqnn_create_general_tensor(const ggml_tensor * tensor, 
                                              void * data, uint32_t data_size,
                                              bool b_transpose = false);
 
+static void ggml_qnn_general_node(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_mul_mat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
 
-void ggml_qnn_general_node(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_mul_mat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-
-void ggml_qnn_repeat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_div(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_leaky_relu(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_concat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_arange(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_sqr(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_clamp(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_scale(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_argsort(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_group_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_acc(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_sum_rows(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_upsample_nearest2d(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_pad(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_pool2d(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_dup(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_rms_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_diag_mask(ggml_backend_qnn_context * ctx, ggml_tensor * dst, float value);
-void ggml_qnn_im2col(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_timestep_embedding(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_cpy(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_softmax(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_get_rows(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
-void ggml_qnn_rope(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_repeat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_div(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_leaky_relu(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_concat(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_arange(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_sqr(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_clamp(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_scale(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_argsort(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_group_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_acc(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_sum_rows(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_upsample_nearest2d(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_pad(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_pool2d(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_dup(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_rms_norm(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_diag_mask(ggml_backend_qnn_context * ctx, ggml_tensor * dst, float value);
+static void ggml_qnn_im2col(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_timestep_embedding(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_cpy(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_softmax(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_get_rows(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
+static void ggml_qnn_rope(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
 
 // =================================================================================================
 //  section-2: ggml-qnn internal troubleshooting function/class
@@ -192,7 +174,7 @@ void ggml_qnn_rope(ggml_backend_qnn_context * ctx, ggml_tensor * dst);
 #else
 #define GGMLQNN_LOG_DEBUG(...)
 #endif
-void ggmlqnn_log_internal(ggml_log_level level, const char * file, const char * func, int line, const char * format, ...) {
+static void ggmlqnn_log_internal(ggml_log_level level, const char * file, const char * func, int line, const char * format, ...) {
     static std::mutex ggmlqnn_log_internal_mutex;
     static char s_ggmlqnn_log_internal_buf[GGML_QNN_LOGBUF_LEN];
 
@@ -287,7 +269,7 @@ static const char *        dlerror(void);
 
 static const char * last_func = nullptr;
 static long last_err;
-void * dlopen(const char * dll, int flags) {
+static void * dlopen(const char * dll, int flags) {
   HINSTANCE h = LoadLibraryA(dll);
   GGML_UNUSED(flags);
   if (h == NULL) {
@@ -297,7 +279,7 @@ void * dlopen(const char * dll, int flags) {
   return h;
 }
 
-int dlclose(void * h) {
+static int dlclose(void * h) {
   if (!FreeLibrary((HINSTANCE)h)) {
     last_err  = GetLastError();
     last_func = "dlclose";
@@ -306,7 +288,7 @@ int dlclose(void * h) {
   return 0;
 }
 
-void * dlsym(void * h, const char * name) {
+static void * dlsym(void * h, const char * name) {
   FARPROC p = GetProcAddress((HINSTANCE)h, name);
   if (!p) {
     last_err  = GetLastError();
@@ -315,7 +297,7 @@ void * dlsym(void * h, const char * name) {
   return (void*)(intptr_t)p;
 }
 
-const char * dlerror(void) {
+static const char * dlerror(void) {
   static char str[512];
   if (!last_err) return nullptr;
 
@@ -717,7 +699,7 @@ static int free_qnn_tensor(Qnn_Tensor_t * tensor) {
     return err;
 }
 
-const char * ggmlqnn_get_error_string(Qnn_ErrorHandle_t qnn_error_code) {
+static const char * ggmlqnn_get_error_string(Qnn_ErrorHandle_t qnn_error_code) {
     // file:///opt/qcom/aistack/qairt/2.31.0.250130/docs/QNN/general/api_error_codes.html
     switch (qnn_error_code) {
         case QNN_SUCCESS:
@@ -821,7 +803,7 @@ const char * ggmlqnn_get_error_string(Qnn_ErrorHandle_t qnn_error_code) {
 }
 
 // helper function to create an operation config
-Qnn_OpConfig_t ggmlqnn_create_op_config(const char * name, const char * package, const char * type,
+static Qnn_OpConfig_t ggmlqnn_create_op_config(const char * name, const char * package, const char * type,
                                        Qnn_Param_t * params, uint32_t num_params,
                                        Qnn_Tensor_t * inputs, uint32_t num_inputs,
                                        Qnn_Tensor_t * outputs, uint32_t num_outputs) {
@@ -1067,7 +1049,7 @@ static struct ggml_backend_qnn_context g_qnn_mgr[GGML_QNN_MAX_DEVICES] = {
                 .socinfo              = {}},
 };
 
-const qnn_op_caps_t ggmlqnn_k_op_caps[] = {
+static const qnn_op_caps_t ggmlqnn_k_op_caps[] = {
         {}, // GGML_OP_NONE
         {}, // GGML_OP_DUP
         {
@@ -1239,7 +1221,7 @@ static const char * get_ggml_type_name(ggml_type type) {
 }
 
 // ref:explanation of k-quants, https://github.com/ggerganov/llama.cpp/pull/1684
-Qnn_DataType_t ggmlqnn_datatype_from_ggml_datatype(enum ggml_type ggmltype) {
+static Qnn_DataType_t ggmlqnn_datatype_from_ggml_datatype(enum ggml_type ggmltype) {
     switch (ggmltype) {
         case GGML_TYPE_F16:
             return QNN_DATATYPE_FLOAT_16;
@@ -1392,11 +1374,11 @@ static void append_tensor_dimensions(const ggml_tensor * tensor, std::string & o
     output.append(buffer, len);
 }
 
-size_t ggmlqnn_get_opcaps_size() {
+static size_t ggmlqnn_get_opcaps_size() {
     return std::size(ggmlqnn_k_op_caps);
 }
 
-size_t ggmlqnn_get_op_index(const ggml_tensor * tensor) {
+static size_t ggmlqnn_get_op_index(const ggml_tensor * tensor) {
     if (tensor->op == GGML_OP_UNARY) {
         return static_cast<size_t>(GGML_OP_COUNT) + static_cast<size_t>(ggml_get_unary_op(tensor));
     }
@@ -1410,7 +1392,7 @@ static size_t ggmlqnn_get_op_input_param_count(const ggml_tensor * op) {
     return ggmlqnn_k_op_caps[op_index].input_param_count;
 }
 
-void ggmlqnn_get_graphkey_from_op(const ggml_tensor * op, std::string & output) {
+static void ggmlqnn_get_graphkey_from_op(const ggml_tensor * op, std::string & output) {
     GGML_ASSERT(op->op != GGML_OP_NONE);
     output += ggml_op_desc(op);
     output += get_ggml_type_name(op->type);
@@ -2741,7 +2723,7 @@ void qnn_instance::probe_device_meminfo() {
     GGMLQNN_LOG_INFO("capacity of rpc ion memory %d MB\n", _rpcmem_capacity);
 }
 
-uint8_t * ggmlqnn_create_rpc_buffer(qnn_instance * instance, const ggml_tensor * ggml_tensor, Qnn_Tensor_t * qnn_tensor, bool b_copydata) {
+static uint8_t * ggmlqnn_create_rpc_buffer(qnn_instance * instance, const ggml_tensor * ggml_tensor, Qnn_Tensor_t * qnn_tensor, bool b_copydata) {
     if (nullptr == instance || nullptr == ggml_tensor || nullptr == qnn_tensor) {
         GGMLQNN_LOG_WARN("invalid params\n");
         return nullptr;
@@ -2760,7 +2742,7 @@ uint8_t * ggmlqnn_create_rpc_buffer(qnn_instance * instance, const ggml_tensor *
     return qnn_rpcbuffer;
 }
 
-void ggmlqnn_print_tensors_info(const char * func_name, ggml_backend_qnn_context * ctx, const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst) {
+static void ggmlqnn_print_tensors_info(const char * func_name, ggml_backend_qnn_context * ctx, const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst) {
     //skip sanity check of params
     if (nullptr != func_name && nullptr != ctx) {
         GGMLQNN_LOG_DEBUG("call %s in dev %s\n", func_name, ctx->name);
@@ -2908,7 +2890,6 @@ static Qnn_Tensor_t * ggmlqnn_create_compute_tensor(qnn_instance * instance, Qnn
 
     return p_qnn_tensor;
 }
-
 
 // =================================================================================================
 //  section-6: implementation of ggml-qnn backend
