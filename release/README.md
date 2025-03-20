@@ -255,5 +255,12 @@
 
 - v1.6.1, 2025-03-09,
                     <ul>
-                        <li>sync code from https://github.com/kantv-ai/ggml-qnn</a>
+                        <li>sync code from https://github.com/kantv-ai/ggml-qnn</li>
+                    </ul>
+
+- v1.6.2, 2025-03-20,
+                    <ul>
+                        <li>upgrade Qualcommon QNN SDK to 2.32.0.250228</li>
+                        <li>upgrade llama.cpp to upstream</li>
+                        <li>sync ggml-qnn implementation from https://github.com/kantv-ai/ggml-qnn</li>
                     </ul>

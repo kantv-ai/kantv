@@ -88,17 +88,20 @@ set(SOURCE_FILES
         ${LLAMACPP_SRC_DIR}/src/llama-vocab.cpp
         ${LLAMACPP_SRC_DIR}/src/unicode.cpp
         ${LLAMACPP_SRC_DIR}/src/unicode-data.cpp
+        ${LLAMACPP_SRC_DIR}/src/llama-io.cpp
+        ${LLAMACPP_SRC_DIR}/src/llama-graph.cpp
 
         ${LLAMACPP_SRC_DIR}/common/arg.cpp
+        ${LLAMACPP_SRC_DIR}/common/build-info.cpp
+        ${LLAMACPP_SRC_DIR}/common/chat.cpp
+        ${LLAMACPP_SRC_DIR}/common/common.cpp
+        ${LLAMACPP_SRC_DIR}/common/console.cpp
+        ${LLAMACPP_SRC_DIR}/common/json-schema-to-grammar.cpp
+        ${LLAMACPP_SRC_DIR}/common/llguidance.cpp
         ${LLAMACPP_SRC_DIR}/common/log.cpp
+        ${LLAMACPP_SRC_DIR}/common/ngram-cache.cpp
         ${LLAMACPP_SRC_DIR}/common/sampling.cpp
         ${LLAMACPP_SRC_DIR}/common/speculative.cpp
-        ${LLAMACPP_SRC_DIR}/common/ngram-cache.cpp
-        ${LLAMACPP_SRC_DIR}/common/common.cpp
-        ${LLAMACPP_SRC_DIR}/common/grammar-parser.cpp
-        ${LLAMACPP_SRC_DIR}/common/console.cpp
-        ${LLAMACPP_SRC_DIR}/common/build-info.cpp
-        ${LLAMACPP_SRC_DIR}/common/json-schema-to-grammar.cpp
 
         ${WHISPERCPP_SRC_DIR}/whisper.cpp
 
@@ -116,6 +119,7 @@ include_directories(${PREBUILT_INC_PATH}/)
 
 include_directories(${LLAMACPP_SRC_DIR}/)
 include_directories(${LLAMACPP_SRC_DIR}/common/)
+include_directories(${LLAMACPP_SRC_DIR}/common/minja/)
 
 add_definitions(-DTARGET_ANDROID)
 add_definitions(-D__ARM_NEON)

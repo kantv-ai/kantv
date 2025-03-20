@@ -1,4 +1,4 @@
-# llama.cpp for QNN
+# llama.cpp for QNN(aka ggml-qnn)
 
 - [Background](#background)
 - [News](#news)
@@ -45,18 +45,142 @@ Qualcomm® AI Engine Direct API and the associated software stack provides all t
 
 ### Llama.cpp + QNN
 
-The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcomm mobile SoC** firstly.
+The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcomm mobile SoC** firstly, supported chipsets:
 
+    Snapdragon 8 Gen 1
+    Snapdragon 8 Gen 1+
+    Snapdragon 8 Gen 2
+    Snapdragon 8 Gen 3
+    Snapdragon 8 Elite(aka  Snapdragon 8 Gen 4)
+
+
+```mermaid
+block-beta
+columns 1
+
+block:llamacpp
+  llamacpp["llama_cpp"]
+  style llamacpp        fill:#3c3,color:#000,stroke:#000
+end
+
+block:ggml_backend
+ggml_backend["GGML backend subsystem"]
+  style ggml_backend    fill:#3c3,color:#000,stroke:#000
+
+block:ggmlbackends
+ ggml_cpu["ggml-cpu"]
+   ggml_metal["ggml-metal"]
+   ggml_sycl["ggml-sycl"]
+   ggml_cuda["ggml-cuda"]
+   ggml_hip["ggml-hip"]
+   ggml_vulkan["ggml-vulkan"]
+   ggml_cann["ggml-cann"]
+   ggml_opencl["ggml-opencl"]
+   ggml_qnn["ggml-qnn"]
+   ggml_nnpa["ggml-nnpa"]
+   ggml_ane["ggml-ane"]
+
+   style ggml_cpu       fill:#888,color:#000,stroke:#000
+   style ggml_metal     fill:#888,color:#000,stroke:#000
+   style ggml_sycl      fill:#888,color:#000,stroke:#000
+   style ggml_cuda      fill:#888,color:#000,stroke:#000
+   style ggml_hip       fill:#888,color:#000,stroke:#000
+   style ggml_vulkan    fill:#888,color:#000,stroke:#000
+   style ggml_cann      fill:#888,color:#000,stroke:#000
+
+   style ggml_opencl    fill:#cc3,color:#000,stroke:#000
+   style ggml_qnn       fill:#cc3,color:#000,stroke:#000
+   style ggml_ane       fill:#fff,color:#000,stroke:#f00,stroke-width:2,stroke-dasharray:5
+   style ggml_nnpa      fill:#cc3,color:#000,stroke:#000
+  end
+end
+
+block:ggml_backendsubsystem
+  ggml_backendsubsystem["GGML backend subsystem"]
+  style ggml_backendsubsystem fill:#3c3,color:#000,stroke:#000
+end
+
+block:group1：2
+  columns 2
+  block:ggml_tensor
+  ggml_tensor["GGML tensor"]
+  style ggml_tensor fill:#3c3,color:#000,stroke:#000
+  end
+
+  block:ggml_cgraph
+  ggml_cgraph["GGML cgraph"]
+  style ggml_cgraph  fill:#3c3,color:#000,stroke:#000
+  end
+end
+
+block:OS
+    Windows
+    Linux
+    Android
+    QNX
+end
+
+block:hardware_vendors
+    Intel
+    AMD
+    Apple
+    Nvidia
+    Huawei
+    Loongson
+    Qualcomm
+    IBM
+
+    ggml_metal  --> Apple
+    ggml_cuda   --> Nvidia
+    ggml_hip    --> AMD
+    ggml_cann   --> Huawei
+    ggml_sycl   --> Intel
+    ggml_opencl --> Qualcomm
+    ggml_qnn    --> Qualcomm
+    ggml_ane    --> Apple
+    ggml_nnpa   --> IBM
+end
+
+block:hardware_types
+    CPU
+    GPU
+    NPU
+    DSP
+end
+
+block:hardware_archs
+    x86
+    arm
+    risc
+    loongson
+end
+```
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false, 'nodeSpacing': 30, 'rankSpacing': 30}} }%%
+flowchart LR
+    classDef EXIST fill:#888,color:#000,stroke:#000
+    classDef DONE fill:#3c3,color:#000,stroke:#000
+    classDef WIP fill:#cc3,color:#000,stroke:#000
+    classDef NEW fill:#fff,color:#000,stroke:#f00,stroke-width:2,stroke-dasharray:5
+    subgraph Legend
+      direction LR
+      EXIST:::EXIST ~~~ WIP:::WIP ~~~ DONE:::DONE ~~~ NEW:::NEW
+    end
+```
 
 ## News
 
-- 01/29/2025---02/13/2025
-  - re-launch activity of <a href="https://github.com/zhouwg/kantv/issues/246">refine ggml-qnn backend for latest ggml,whisper.cpp,llama.cpp</a></b>
+- 01/29/2025---03/11/2025
+  - re-launch activity of "Refine ggml-qnn backend(QNN, Qualcomm Neural Network,aka Qualcomm AI Engine Direct) for latest ggml,whisper.cpp,llama.cpp"
   - data path works pretty good as expected with whisper.cpp and llama.cpp and test-backend-ops and llama-cli with ggml-qnn backend and verified on Xiaomi14(high-end Qualcomm mobile SoC equipped Android phone)
-  - bugfix,santiy check,refine code according to coding stye and pricinple of upstream ggml community
-  - Support OPs
-    - GGML_OP_ADD
-  - ready for the second PR to upstream llama.cpp community
+  - support quantize type mulmat
+  - more feature, more UT, more CT, bugfix, santiy check, code refine, refine code format according to coding stye and principle of upstream ggml community
+  - support OPs
+    - GGML_OP_ADD/GGML_OP_SUB/GGML_OP_MUL/GGML_OP_DIV/GGML_OP_LOG/GGML_OP_SQRT/GGML_OP_MUL_MAT
+  - submit the second formal PR to upstream(broken and polluted, now already deprecated)
+  - submit the third formal PR to upstream llama.cpp community:["Refine ggml-qnn backend(QNN, Qualcomm Neural Network,aka Qualcomm AI Engine Direct) for latest ggml,whisper.cpp,llama.cpp"](https://github.com/ggml-org/llama.cpp/pull/12326)
+
 
 - 05/28/2024---06/15/2024
   - re-launch activity of <a href="https://github.com/ggerganov/llama.cpp/pull/6869">PR in upstream ggml community</a>
@@ -67,7 +191,7 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
   - refine PR according to comments from reviewer
 
 - 04/24/2024
-  - a very beginning <a href="https://github.com/ggerganov/llama.cpp/pull/6869">PR to upstream ggml community</a>
+  - the first formal (a very beginning) PR <a href="https://github.com/ggerganov/llama.cpp/pull/6869"> to upstream llama.cpp community</a>
   - data path works fine as expected by <a href="https://github.com/ggerganov/llama.cpp/pull/7641">a workaround approach which not accepted by the author of ggml backend subsystem</a> with whisper.cpp and llama.cpp using QNN backend and verified on both low-end and high-end Android phones based on Qualcomm mobile SoC
   - Support OPs
     - GGML_OP_ADD
@@ -75,8 +199,11 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
     - GGML_OP_MUL_MAT
 
  - 03/29/2024---04/24/2024
-   - first implementaton of ggml-qnn <a href="https://github.com/zhouwg/kantv/issues/121">PoC:add QNN backend for Qualcomm mobile SoC</a>
+   - first implementation of ggml-qnn <a href="https://github.com/zhouwg/kantv/issues/121">PoC:add QNN backend for Qualcomm mobile SoC</a>
+   ![Image](https://github.com/user-attachments/assets/0ee33100-92da-43f7-baa6-7c4129525aba)
 
+ - 03/25/2024
+   - https://github.com/ggml-org/ggml/issues/771
  - 03/05/2024---03/16/2024
    - first touch with ggml <a href="https://github.com/zhouwg/kantv/issues/64">PoC:clean-room implementation of real-time AI subtitle for English online-TV(OTT TV)</a>
 
@@ -101,72 +228,82 @@ The llama.cpp QNN backend(aka ggml-qnn backend) is intented to support **Qualcom
 
 ### Windows on ARM(Qualcomm desktop SoC)
 
-TBD
+a Snapdragon desktop SoC equipped WoA device(Windows on ARM)  is required to **verify build result or further dev activity for WoA(Windows on ARM)**, unfortunately, I have no such WoA device. accordingly, there are might-be some minor issues on WoA(Windows on ARM). the good news for WoA port is:
+- a Snapdragon 8gen2 or 8gen3 or 8gen4 equipped Android phone can be seen or bought everywhere, I or this great tech community will finish the major work of ggml-qnn on Snapdragon high-end mobile SoC equipped Android phone.
+- the WoA port is an easy thing for a skilled Windows programmer because the highly-well designed Qualcomm QNN SDK and the source codes of ggml/llama.cpp are both highly portable.
 
 ## Android
 
-### 1. Setup Environment
+### How to build ggml‐qnn source code for Android and verify ggml-qnn backend on Snapdragon based phone
 
-Any **mainstream** Android phone equipped with Qualcomm's mobile SoC should be supported by llama.cpp + ggml-qnn. Qualcomm SM8650-AB Snapdragon 8 Gen 3/4 quipped Android phone is preferred.
+Ubuntu 20.04,22.04 is validated and recommended as host machine(other Linux distributions might be also ok). the dev activity in this PR can be done in pure command line without any IDE:
+  - utilize build-run-android.sh to download Android NDK and Qualcomm QNN SDK automatically(pls see below section)
+  - you will need an Android smartphone with adb-connected running on one of below Qualcomm SoCs:
 
-### 2. Run ggml-qnn backend in command line mode on Android phone
+    SM8450    (Snapdragon 8 Gen 1+)
+    SM8550    (Snapdragon 8 Gen 2)
+    SM8650    (Snapdragon 8 Gen 3)
+    SM8750-AB (Snapdragon 8 Elite)(aka  Snapdragon 8 Gen 4)
 
-- for QNN backend developers, download and install QNN SDK from Qualcomm offcial website
 
 ```
-  https://qpm.qualcomm.com/#/main/tools/details/qualcomm_ai_engine_direct
+  git clone https://github.com/kantv-ai/ggml-qnn
+  cd ggml-qnn
+  git checkout pr_to_upstream
 
-  https://developer.qualcomm.com/software/hexagon-dsp-sdk/tools
-
-```
-
-  the default installation path is /opt/qcom/aistack/qairt/2.31.0.250130/
-
-
-- for <b>llama.cpp community programmers</b>, using <b>the official llama-cli and test-backend-ops command line tool </b> to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
-
-```
-  git clone https://github.com/kantv-ai/llama.cpp
-  cd llama.cpp
-  git checkout kantvai-ggmlqnn
-  ./scripts/build-run-android.sh build          (it'll setup local build envs automatically and build the entire project)
-  ./scripts/build-run-android.sh updateqnnlib   (upload Qualcomm's QNN binary runtime libs to Android phone)
-  ./scripts/build-run-android.sh run_llamacli   (running llama-cli on Android pohone)
-  ./scripts/build-run-android.sh run_testop     (running test-backend-ops on Android phone)
+ ./scripts/build-run-android.sh
+Usage:
+  ./scripts/build-run-android.sh help
+  ./scripts/build-run-android.sh print_oplist
+  ./scripts/build-run-android.sh build
+  ./scripts/build-run-android.sh updateqnnlib
+  ./scripts/build-run-android.sh run_testops
+  ./scripts/build-run-android.sh run_llamacli
+  ./scripts/build-run-android.sh run_llamabench
 
 ```
 
-- for project programmers, using self-made command line application to verify ggml-qnn backend on Qualcomm mobile SoC equipped Android phone
+we can find that this backend works fine as expected from the log output of "adb logcat | grep ggml-qnn". for programmers, we can use "adb logcat | grep ggml-qnn" to help troubleshooting work.
 
-```
-  git clone https://github.com/zhouwg/kantv
-  cd kantv
-  . build/envsetup.sh
-  lunch 1
-  cd core/ggml/llamacpp/tests
-  ./ggml-qnn-ut.sh build
-  ./ggml-qnn-ut.sh updateqnnlib
-  ./ggml-qnn-ut.sh GGML_OP_ADD      0 (QNN_CPU) / 1(QNN_GPU) / 2(QNN_NPU)
+<!--
+###  Run ggml-qnn backend in Android APK on Android phone
 
-```
-
-### 3. Run ggml-qnn backend in Android APK on Android phone
-
-pls refer to <a href="./README.md">README.md</a>
 
 
 ![Image](https://github.com/user-attachments/assets/7c46a952-5d0a-4735-9d74-0bb0b4198b12)
 
 ![Image](https://github.com/user-attachments/assets/d93b3a64-6161-43fb-8d61-215ef4a68cfb)
-
+-->
 
 ## ggml-qnn for WoA(Windows on ARM)
 
-TBD
+ before build, we should modify file <llama.cpp_src_path>/cmake/arm64-windows-llvm.camke manually(this modification will bring side-effect to other build so we should modify it manually):
+![Screenshot from 2025-03-11 14-53-29](https://github.com/user-attachments/assets/b57bf631-288b-4e7f-940d-2ead23cf8679)
+
+
+- download and install Qualcomm QNN SDK on Windows accordingly from https://www.qualcomm.com/developer/software/qualcomm-ai-engine-direct-sdk, put them in C:\qairt\2.32.0.250228 (as of 03/10/2025, the latest QNN SDK is 2.32.0.250228, pls modify this accordingly)
+ - download the customized/dedicated toolchain llvm-mingw-20250305-ggml-ucrt-x86_64.zip (less then 300M) from https://github.com/kantv-ai/toolchain and unzip it to C:\\Program Files\\llvm-mingw-20250305-ggml-ucrt-x86_64\\
+
+open a **Windows command line prompt**
+```
+set PATH=C:\Program Files\llvm-mingw-20250305-ggml-ucrt-x86_64\bin;C:\Program Files\llvm-mingw-20250305-ggml-ucrt-x86_64\Git\cmd;C:\Program Files\llvm-mingw-20250305-ggml-ucrt-x86_64\CMake\bin;%PATH%;
+```
+
+```
+git clone https://github.com/kantv-ai/ggml-qnn
+cd ggml-qnn
+git checkout pr_to_upstream
+cd pr_to_upstream
+cmake --preset arm64-windows-llvm-release -D GGML_OPENMP=OFF -DGGML_QNN=ON -DCMAKE_CXX_FLAGS=-D_WIN32_WINNT=0x602 -DGGML_QNN_SDK_PATH="C:\\qairt\\2.32.0.250228"
+cmake --build build-arm64-windows-llvm-release
+```
+
+
+
 
 ## Q&A
 
-pls file issue reports on https://github.com/zhouwg/kantv/issues
+pls file issue reports on https://github.com/kantv-ai/ggml-qnn/discussions
 
 ### **GitHub contribution**:
-Please add the **[ggml-qnn]** prefix/tag in issues/PRs titles to help the community check/address them without delay.
+Please add the **[ggml-qnn]** prefix/tag in discussions/PRs titles to help me check/address them without delay.

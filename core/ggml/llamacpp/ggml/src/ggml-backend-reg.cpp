@@ -8,6 +8,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <cctype>
 
 #ifdef _WIN32
 #    define WIN32_LEAN_AND_MEAN
@@ -79,7 +80,14 @@ namespace fs = std::filesystem;
 static std::string path_str(const fs::path & path) {
     std::string u8path;
     try {
+#if defined(__cpp_lib_char8_t)
+        // C++20 and later: u8string() returns std::u8string
+        std::u8string u8str = path.u8string();
+        u8path = std::string(reinterpret_cast<const char*>(u8str.c_str()));
+#else
+        // C++17: u8string() returns std::string
         u8path = path.u8string();
+#endif
     } catch (...) {
     }
     return u8path;
@@ -496,7 +504,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
         search_paths.push_back(get_executable_path());
         search_paths.push_back(fs::current_path());
     } else {
-        search_paths.push_back(user_search_path);
+        search_paths.push_back(fs::u8path(user_search_path));
     }
 
     int best_score = 0;
@@ -510,9 +518,9 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
         fs::directory_iterator dir_it(search_path, fs::directory_options::skip_permission_denied);
         for (const auto & entry : dir_it) {
             if (entry.is_regular_file()) {
-                auto filename = entry.path().filename().native();
-                auto ext = entry.path().extension().native();
-                if (filename.find(file_prefix) == 0 && ext == file_extension) {
+                auto filename = entry.path().filename();
+                auto ext = entry.path().extension();
+                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {
                     dl_handle_ptr handle { dl_load_library(entry) };
                     if (!handle && !silent) {
                         GGML_LOG_ERROR("%s: failed to load %s\n", __func__, path_str(entry.path()).c_str());
@@ -543,7 +551,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
         // try to load the base backend
         for (const auto & search_path : search_paths) {
             fs::path filename = backend_filename_prefix().native() + name_path.native() + backend_filename_extension().native();
-            fs::path path = search_path.native() + filename.native();
+            fs::path path = search_path / filename;
             if (fs::exists(path)) {
                 return get_reg().load_backend(path, silent);
             }
@@ -576,7 +584,6 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
     ggml_backend_load_best("vulkan", silent, dir_path);
     ggml_backend_load_best("opencl", silent, dir_path);
     ggml_backend_load_best("musa", silent, dir_path);
-    ggml_backend_load_best("qnn", silent, dir_path);
     ggml_backend_load_best("cpu", silent, dir_path);
     // check the environment variable GGML_BACKEND_PATH to load an out-of-tree backend
     const char * backend_path = std::getenv("GGML_BACKEND_PATH");

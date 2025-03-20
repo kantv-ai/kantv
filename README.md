@@ -25,7 +25,7 @@ KanTV("Kan", aka Chinese PinYin "Kan" or Chinese HanZi "看" or English "watch/l
 
 ### Highlight
 
-As far as we know, probably be the first <a href="https://github.com/zhouwg/kantv/issues/246">open-source implmentation of ggml-qnn</a>
+As far as I know, probably be the first <a href="https://github.com/zhouwg/kantv/issues/246">open-source implmentation of ggml-qnn</a>
 
 ### Supported Chipset
 

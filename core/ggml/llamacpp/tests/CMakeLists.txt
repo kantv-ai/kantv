@@ -17,7 +17,9 @@ set(LLAMACPP_SRC_DIR                ${CMAKE_SOURCE_DIR}/../)
 include_directories(${QNN_INC_PATH})
 include_directories(../ggml/include)                # ggml.h
 include_directories(../ggml/src)                    # ggml-impl.h
+include_directories(../ggml/src)                    # ggml-impl.h
 include_directories(../ggml/src/ggml-cpu)           # ggml-cpu-impl.h
+include_directories(../ggml/../../llamacpp/common/)          # stb_image.h
 include_directories(../../../../prebuilts/include/) # cde_log.h
 
 set(SOURCE_FILES

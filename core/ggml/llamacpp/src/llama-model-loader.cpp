@@ -958,7 +958,6 @@ bool llama_model_loader::load_all_data(
 
             events.emplace_back(event);
         }
-
         ggml_backend_t backend = ggml_backend_dev_init(dev, nullptr);
         if (!backend) {
             LLAMA_LOG_DEBUG("%s: failed to initialize backend for device %s for async uploads\n", func,

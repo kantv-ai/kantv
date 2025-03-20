@@ -117,9 +117,17 @@ WHISPER_ATTRIBUTE_FORMAT(2, 3)
 static void whisper_log_internal        (ggml_log_level level, const char * format, ...);
 static void whisper_log_callback_default(ggml_log_level level, const char * text, void * user_data);
 
+#if 0
 #define WHISPER_LOG_ERROR(...) whisper_log_internal(GGML_LOG_LEVEL_ERROR, __VA_ARGS__)
 #define WHISPER_LOG_WARN(...)  whisper_log_internal(GGML_LOG_LEVEL_WARN , __VA_ARGS__)
 #define WHISPER_LOG_INFO(...)  whisper_log_internal(GGML_LOG_LEVEL_INFO , __VA_ARGS__)
+#else
+#include "kantv-asr.h"
+#include "ggml-jni.h"
+#define WHISPER_LOG_ERROR LOGGD
+#define WHISPER_LOG_WARN  LOGGW
+#define WHISPER_LOG_INFO  LOGGI
+#endif
 
 // define this to enable verbose trace logging - useful for debugging purposes
 //#define WHISPER_DEBUG
@@ -1259,7 +1267,11 @@ static ggml_backend_t whisper_backend_init_gpu(const whisper_context_params & pa
     }
 
     WHISPER_LOG_INFO("%s: using %s backend\n", __func__, ggml_backend_dev_name(dev));
+#ifndef GGML_USE_QNN
     ggml_backend_t result = ggml_backend_dev_init(dev, nullptr);
+#else
+    ggml_backend_t result = ggml_backend_dev_init(dev,reinterpret_cast<const char *>(params.gpu_device));
+#endif
     if (!result) {
         WHISPER_LOG_ERROR("%s: failed to initialize %s backend\n", __func__, ggml_backend_dev_name(dev));
     }

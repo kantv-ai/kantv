@@ -4,7 +4,7 @@
 #include "log.h"
 #include "sampling.h"
 #include "llama.h"
-#include "chat-template.hpp"
+#include "minja/chat-template.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -26,6 +26,8 @@ extern "C" {
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #include <signal.h>
 #include <unistd.h>
+#include <chat.h>
+
 #elif defined (_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
@@ -176,7 +178,7 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     }
 
     const llama_vocab * vocab = llama_model_get_vocab(model);
-    auto chat_templates = common_chat_templates_from_model(model, params.chat_template);
+    auto chat_templates = common_chat_templates_init(model, params.chat_template);
 
     LOG_INF("%s: llama threadpool init, n_threads = %d\n", __func__, (int) params.cpuparams.n_threads);
 
@@ -219,7 +221,8 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     }
 
     // auto enable conversation mode if chat template is available
-    const bool has_chat_template = chat_templates.has_explicit_template && chat_templates.template_default;
+    // auto enable conversation mode if chat template is available
+    const bool has_chat_template = common_chat_templates_was_explicit(chat_templates.get());
     if (params.conversation_mode == COMMON_CONVERSATION_MODE_AUTO) {
         if (has_chat_template) {
             LOG_INF("%s: chat template is available, enabling conversation mode (disable it with -no-cnv)\n", __func__);
@@ -237,7 +240,11 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     // print chat template example in conversation mode
     if (params.conversation_mode) {
         if (params.enable_chat_template) {
-            LOG_INF("%s: chat template example:\n%s\n", __func__, common_chat_format_example(*chat_templates.template_default, params.use_jinja).c_str());
+            if (!params.prompt.empty() && params.system_prompt.empty()) {
+                LOG_WRN("*** User-specified prompt will pre-start conversation, did you mean to set --system-prompt (-sys) instead?\n");
+            }
+
+            LOG_INF("%s: chat template example:\n%s\n", __func__, common_chat_format_example(chat_templates.get(), params.use_jinja).c_str());
         } else {
             LOG_INF("%s: in-suffix/prefix is specified, chat template will be disabled\n", __func__);
         }
@@ -282,9 +289,11 @@ int llama_inference_main(int argc, char ** argv, int backend_type) {
     std::vector<llama_token> embd_inp;
 
     auto chat_add_and_format = [&chat_msgs, &chat_templates](const std::string & role, const std::string & content) {
-        common_chat_msg new_msg{role, content};
-        auto formatted = common_chat_format_single(*chat_templates.template_default, chat_msgs, new_msg, role == "user", g_params->use_jinja);
-        chat_msgs.push_back({role, content});
+        common_chat_msg new_msg;
+        new_msg.role = role;
+        new_msg.content = content;
+        auto formatted = common_chat_format_single(chat_templates.get(), chat_msgs, new_msg, role == "user", g_params->use_jinja);
+        chat_msgs.push_back(new_msg);
         LOG_DBG("formatted: '%s'\n", formatted.c_str());
         return formatted;
     };

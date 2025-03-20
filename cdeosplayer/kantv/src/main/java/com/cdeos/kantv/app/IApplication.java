@@ -232,6 +232,7 @@ public class IApplication extends Application {
         mKANTVDRM.ANDROID_JNI_Init(mContext, CDEUtils.getDataPath(mContext));
         mKANTVDRM.ANDROID_JNI_SetLocalEMS(CDEUtils.getLocalEMS());
         CDEAssetLoader.copyAssetFile(mContext, "config.json", CDEAssetLoader.getDataPath(mContext) + "config.json");
+        CDEAssetLoader.copyAssetFile(mContext, "ggml-qnn.cfg", CDEAssetLoader.getDataPath(mContext) + "/qnnlib/ggml-qnn.cfg");
 
         CDEUtils.copyAssetFile(mContext, "res/apple.png", CDEUtils.getDataPath(mContext) + "apple.png");
         CDEUtils.copyAssetFile(mContext, "res/colorkey.png", CDEUtils.getDataPath(mContext) + "colorkey.png");

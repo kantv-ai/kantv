@@ -1479,9 +1479,7 @@ int whisper_asr_init(const char * sz_model_path, int n_threads, int n_asrmode, i
      p_asr_ctx->n_threads  = n_threads;
 
      LOGGD("calling whisper_init_from_file");
-#if 0
-     p_asr_ctx->p_context = whisper_init_from_file(sz_model_path);
-#else  //04-11-2024, for PoC:Add Qualcomm mobile SoC native backend for GGML, https://github.com/zhouwg/kantv/issues/121
+     //04-11-2024, for PoC:Add Qualcomm mobile SoC native backend for GGML, https://github.com/zhouwg/kantv/issues/121
      // ref:https://github.com/ggerganov/llama.cpp/pull/6022
      // the user could specify the devices that they want to use by name. For example,
      // the user could specify to use devices cpu, sycl_igpu0 and sycl_dgpu0 to select CPU, iGPU and dGPU
@@ -1496,7 +1494,7 @@ int whisper_asr_init(const char * sz_model_path, int n_threads, int n_asrmode, i
      }
 #endif
      p_asr_ctx->p_context = whisper_init_from_file_with_params(sz_model_path, c_params);
-#endif
+
      if (nullptr == p_asr_ctx->p_context) {
          result = 8;
          LOGGW("whispercpp initialize failure\n");

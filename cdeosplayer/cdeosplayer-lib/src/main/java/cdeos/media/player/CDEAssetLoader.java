@@ -51,6 +51,12 @@
              File destFile = new File(destFilePath);
 
              if (destFile.exists()) {
+                 if (destFilePath.contains("ggml-qnn.cfg")) {
+                     destFile.delete();
+                 }
+             }
+
+             if (destFile.exists()) {
                  // 03-30-2024 17:09:35.152 24446 24797 D KANTV   : [LogUtils.cpp, logStdoutCallback, 48]:
                  // 0.3ms [ ERROR ] Unable to load backend. pal::dynamicloading::dlError():
                  // dlopen failed: file offset for the library "/data/data/com.cdeos.kantv/libQnnCpu.so" >= file size: 0 >= 0

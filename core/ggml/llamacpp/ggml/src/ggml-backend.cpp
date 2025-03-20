@@ -21,6 +21,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #ifdef __APPLE__
 #include <sys/types.h>
@@ -1823,7 +1824,6 @@ bool ggml_backend_compare_graph_backend(ggml_backend_t backend1, ggml_backend_t 
     struct ggml_cgraph * g2 = copy.graph;
 
     assert(g1->n_nodes == g2->n_nodes);
-
 
     for (int i = 0; i < g1->n_nodes; i++) {
         struct ggml_tensor * t1 = g1->nodes[i];

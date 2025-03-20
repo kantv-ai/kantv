@@ -683,7 +683,7 @@
              ggmlModelFileName = selectModeFileName;
              CDELog.j(TAG, "model file:" + CDEUtils.getDataPath() + selectModeFileName);
              if (isASRModel) { //avoid crash
-                 ggmljava.asr_reset(CDEUtils.getDataPath() + "/models/" + selectModeFileName, ggmljava.get_cpu_core_counts() / 2, CDEUtils.ASR_MODE_BECHMARK, backendIndex);
+                 ggmljava.asr_reset(CDEUtils.getDataPath()  + selectModeFileName, ggmljava.get_cpu_core_counts() / 2, CDEUtils.ASR_MODE_BECHMARK, backendIndex);
              }
 
              nLogCounts = 0;
